@@ -1,5 +1,5 @@
 <?php include('templates/layouts/header.php'); ?>
-<div class="wrapper px-2">
+<div class="ghost-wrapper px-2">
     <?php if (isset($errors)) : ?>
         <ul>
             <?php foreach($errors as $error) {?>

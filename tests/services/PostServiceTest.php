@@ -1,14 +1,15 @@
+<!-- vendor/bin/phpunit tests\services\PostServiceTest.php  -->
 <?php
 
 use PHPUnit\Framework\TestCase;
-use app\axis\Service;
-use app\axis\Template;
-use app\axis\toolbox\Session;
+use app\aura\Service;
+use app\aura\Template;
+use app\aura\utils\Session;
 use app\form_classes\PostRequest;
 use app\services\PostService;
-use app\models\entities\PostEntity;
-use app\models\repositories\UserRepository;
-use app\models\repositories\PostRepository;
+use app\entities\PostEntity;
+use app\repositories\UserRepository;
+use app\repositories\PostRepository;
 
 require 'bootstrap.php';
 
@@ -180,7 +181,7 @@ class PostServiceTest extends TestCase
         $post_service = new PostService();
 
         $mock_post_repository = $this->getMockBuilder(PostRepository::class)->getMock();
-        $mock_post_repository->method('create')->willReturn(true);
+        $mock_post_repository->method('createPost')->willReturn(true);
 
         $_SESSION['csrf_token']['post_create'] = 'valid_token';
 
@@ -194,7 +195,7 @@ class PostServiceTest extends TestCase
         $token_check = $post_service->checkToken('post_create');
         $post_data =  $post_service->makePost($_POST);
 
-        $result = $mock_post_repository->create($post_data);
+        $result = $mock_post_repository->createPost($post_data);
 
         $this->assertTrue($token_check);
         $this->assertTrue($result);
@@ -213,7 +214,7 @@ class PostServiceTest extends TestCase
         $post_service = new PostService();
 
         $mock_post_repository = $this->getMockBuilder(PostRepository::class)->getMock();
-        $mock_post_repository->method('update')->willReturn(true);
+        $mock_post_repository->method('updatePost')->willReturn(true);
 
         $_SESSION['csrf_token']['post_update'] = 'valid_token';
 
@@ -228,7 +229,7 @@ class PostServiceTest extends TestCase
         $token_check = $post_service->checkToken('post_update');
         $post_data =  $post_service->makePost($_POST);
 
-        $result = $mock_post_repository->update($post_data);
+        $result = $mock_post_repository->updatePost($post_data);
 
         $this->assertTrue($token_check);
         $this->assertTrue($result);
@@ -247,7 +248,7 @@ class PostServiceTest extends TestCase
         $post_service = new PostService();
 
         $mock_post_repository = $this->getMockBuilder(PostRepository::class)->getMock();
-        $mock_post_repository->method('delete')->willReturn(true);
+        $mock_post_repository->method('deletePost')->willReturn(true);
 
         $_SESSION['csrf_token']['post_delete'] = 'valid_token';
 
@@ -262,7 +263,7 @@ class PostServiceTest extends TestCase
         $token_check = $post_service->checkToken('post_delete');
         $post_data =  $post_service->makePost($_POST);
 
-        $result = $mock_post_repository->delete($post_data);
+        $result = $mock_post_repository->deletePost($post_data);
 
         $this->assertTrue($token_check);
         $this->assertTrue($result);

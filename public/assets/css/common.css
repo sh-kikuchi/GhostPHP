@@ -1,36 +1,32 @@
-/*********************************/
+/*********************************
+Initialize
+*********************************/
+button{
+  background: none;
+	border: none;
+	outline: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+}
 h1,h2,h3,h4,h5,h6{
   margin-top: 0;
   margin-bottom: 0;
 }
-/*********************************
-* body*
-*********************************/
 body {
   margin: 0;
   padding: 0;
   font-size: 14px;
 }
-/*********************************
-* Table
-* h*
-*********************************
-*********************************/
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  height: 40px; 
+}
 th,td {
   border: solid 1px;
-}
-table {
-  border-collapse:  collapse;
-  width:  100%;
-  table-layout: fixed;
-}
-/*********************************
-* grid
-*********************************/
-.grid-two-block{
-  display: grid;
-  gap: 10px;
-  grid-template-columns: 1fr 1fr;
+  min-height: 40px;
 }
 /*********************************
 * button
@@ -78,15 +74,6 @@ table {
 }
 .form-textarea{
   resize: none;
-}
-.file-label{
-  padding: 10px 40px;
-  color: grey;
-  background-color: aquamarine;
-  cursor: pointer;
-}
-.file-input{
-  display: none;
 }
 /*********************************
 * FlexBox

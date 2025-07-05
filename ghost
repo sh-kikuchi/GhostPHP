@@ -1,0 +1,61 @@
+<?php
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+/**
+ * Class Ghost
+ * 
+ * This class is responsible for autoloading and executing commands.
+ */
+class Ghost {
+    protected $class_name;
+    protected $option;
+
+    /**
+     * Constructor for the Ghost class.
+     *
+     * Sets environment variables and initializes class properties.
+     *
+     * @param string $class_name The name of the class to autoload.
+     * @param mixed $option Optional parameter to pass to the class.
+     */
+    public function __construct($class_name, $option = null) {
+        // Set environment variables
+        $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+        $dotenv->load();
+
+        // Set properties
+        $this->class_name = $class_name;
+        $this->option     = $option;
+    }
+
+    /**
+     * Autoloads the specified class and executes its run method.
+     *
+     * @throws LogicException If the class cannot be loaded.
+     */
+    public function autoload(){
+        try {
+            include './aura/utils/commands/' . ucfirst($this->class_name) . '.php';
+
+            if (class_exists($this->class_name)) {
+                $instance = new $this->class_name();
+
+                if ($this->option !== null) {
+                    $instance->run($this->option);
+                } else {
+                    $instance->run();
+                }
+
+            } else {
+                throw new LogicException("Unable to load class: $this->class_name");
+            }
+
+        } catch (Exception $e) {
+            print($e->getMessage());
+        }
+    }
+}
+
+$ghost = new Ghost($argv[1], $argv[2] ?? null);
+$ghost->autoload();

@@ -4,33 +4,34 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="<?php echo dirname($_SERVER['SCRIPT_NAME']); ?>/public/assets/css/style.css">
-    <link rel="stylesheet" href="<?php echo dirname($_SERVER['SCRIPT_NAME']); ?>/public/assets/css/script-styles.css">
-    <link rel="stylesheet" href="<?php echo dirname($_SERVER['SCRIPT_NAME']); ?>/public/assets/css/common.css">
-    <script type="text/javascript" src="<?php echo dirname($_SERVER['SCRIPT_NAME']); ?>/public/assets/js/script.js" defer></script>
-    <title>The-elephant-in-the-room</title>
+        <link rel="stylesheet" href="<?php echo dirname($_SERVER['SCRIPT_NAME']); ?>/public/assets/css/common.css">
+    <link rel="stylesheet" href="<?php echo dirname($_SERVER['SCRIPT_NAME']); ?>/public/assets/css/ghost.css">
+
+    <script type="text/javascript" src="<?php echo dirname($_SERVER['SCRIPT_NAME']); ?>/public/assets/js/ghost.js" defer></script>
+    <title>Ghost PHP</title>
 </head>
 <body>
-<header>
+<header class="ghost-header">
     <div id="title">
-      the-elephant-in-the-room
+      Ghost PHP
     </div>
-    <div id="menu">
-        <div id="js-hamburger" class="hamburger">
+    <div>
+        <div class="ghost-hamburger">
             <span></span>
             <span></span>
             <span></span>
         </div>
     </div>
-    <nav class="header-nav nav" id="js-nav">
-        <ul class="nav-items">
-            <li class="nav-item"><a class="nav-item" href="<?php echo dirname($_SERVER['SCRIPT_NAME']); ?>">TOP</a></li>
+    
+    <nav class="ghost-header-nav ghost-nav">
+        <ul class="ghost-nav-items">
+            <li class="ghost-nav-item"><a class="ghost-nav-item" href="<?php echo dirname($_SERVER['SCRIPT_NAME']); ?>">TOP</a></li>
             <?php if (!isset($_SESSION['signin_user'])) : ?>
-                <li class="nav-item"><a class="nav-item" href="<?php echo dirname($_SERVER['SCRIPT_NAME']); ?>/signin">Signin</a></li>
-                <li class="nav-item"><a class="nav-item" href="<?php echo dirname($_SERVER['SCRIPT_NAME']); ?>/signup">Signup</a></li>
+                <li class="ghost-nav-item"><a class="ghost-nav-item" href="<?php echo dirname($_SERVER['SCRIPT_NAME']); ?>/signin">Signin</a></li>
+                <li class="ghost-nav-item"><a class="ghost-nav-item" href="<?php echo dirname($_SERVER['SCRIPT_NAME']); ?>/signup">Signup</a></li>
             <?php else: ?>
-                <li class="nav-item"><a class="nav-item" href="<?php echo dirname($_SERVER['SCRIPT_NAME']); ?>/index">My Page</a></li>
-                <li class="nav-item flex-box justify-center">
+                <li class="ghost-nav-item"><a class="ghost-nav-item" href="<?php echo dirname($_SERVER['SCRIPT_NAME']); ?>/index">My Page</a></li>
+                <li class="ghost-nav-item flex-box justify-center">
                     <form action="<?php echo dirname($_SERVER['SCRIPT_NAME']); ?>/signout" method="POST">
                         <input type="submit" name="signout" class="input-init" value="Signout" style="font-size:21px; cursor: pointer;">
                     </form>

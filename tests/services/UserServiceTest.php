@@ -2,12 +2,12 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
-use app\axis\Template;
-use app\axis\toolbox\File;
-use app\axis\toolbox\Mail;
+use app\aura\Template;
+use app\aura\utils\File;
+use app\aura\utils\Mail;
 use app\services\UserService;
-use app\models\repositories\UserRepository;
-use app\models\entities\UserEntity;
+use app\repositories\UserRepository;
+use app\entities\UserEntity;
 require 'bootstrap.php';
 
 /**

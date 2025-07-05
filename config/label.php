@@ -12,7 +12,7 @@ class LABEL {
      * @var array
      */
     const HEADER = [
-        'title' => 'THE ELEPHANT IN THE ROOM'
+        'title' => 'Ghost PHP'
     ];
 }
 

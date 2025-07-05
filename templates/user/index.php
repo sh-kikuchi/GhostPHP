@@ -1,17 +1,16 @@
 <?php include('templates/layouts/header.php'); ?>
-<div class="wrapper">
+<div class="ghost-wrapper">
     <section class="flex-box justify-center">
        
-        <div>
-            <h2 class="text-center">Contents</h2>
-            <ul class="tab-list flex-box justify-center">
-            <li class="tab-item active">Auth</li>
-            <li class="tab-item">CRUD</li>
-            <li class="tab-item">Mail</li>
-            <li class="tab-item">File</li>
+        <div class="mt-4">
+            <ul class="ghost-tab-list flex-box justify-center">
+            <li class="ghost-tab-item active">Auth</li>
+            <li class="ghost-tab-item">CRUD</li>
+            <li class="ghost-tab-item">Mail</li>
+            <li class="ghost-tab-item">File</li>
             </ul>
-            <div class="tab-container">
-                <div class="tab-content active">
+            <div class="ghost-tab-container">
+                <div class="ghost-tab-content active">
                     <section>
                         <div>
                             <h4 class="text-center mt-3">Auth</h4>
@@ -21,20 +20,20 @@
                                     <li>email:<?php echo h($signin_user['email']) ?></li>
                                 </ul>
                             </div>
-                            <p class="text-center">If you want to sign out, please select it from the hamburger menu.</p>
+                            <p class="text-center">If you want to sign out, please select it from the ghost-hamburger menu.</p>
                         </div>
                     </section>
                 </div>
-                <div class="tab-content">
+                <div class="ghost-tab-content">
                     <section>
                         <h4 class="text-center mt-3">Sample App</h4>
                         <p class="text-center ma-3">I created a simple demo app using JSON Placeholder.<br> You can perform basic CRUD operations, so please check it out.<p>
                         <div class="flex-box justify-center">
-                            <a href="#" class="modal-btn">Go to Sample App</a>
+                            <a href="#" class="ghost-modal-btn">Go to Sample App</a>
                         </div>
                     </section>
                 </div>
-                <div class="tab-content">
+                <div class="ghost-tab-content">
                     <section>
                         <div>
                             <h4 class="text-center mt-3">Mail Test</h4>
@@ -65,7 +64,7 @@
                                             </textarea>
                                         </div>
                                         <div class="flex-box justify-center">
-                                            <button type="submit"  class="pa-3 my-2 primary">Send</button>
+                                            <button type="submit" class="ghost-btn">Send</button>
                                         </div>
                                     </div>
                                 </form>
@@ -73,7 +72,7 @@
                         </div>
                     </section>
                 </div>
-                <div class="tab-content">
+                <div class="ghost-tab-content">
                     <section>
                         <div >
                            <h4 class="text-center mt-3">File Upload(png/jpg)</h4>
@@ -82,7 +81,7 @@
                                     <input type="hidden" name="max_file_size" value="1000000">
                                     <input id="upload"  type="file" name="upfile" size="40">
                                     <div class="flex-box justify-center mt-2">
-                                        <button class="pa-3 error">UPLOAD</button>
+                                        <button class="ghost-btn">Upload</button>
                                     </div>
                                 </form>
                             </div>
@@ -94,12 +93,12 @@
         </div>
     </section>
     <!-- Modal -->
-    <div class="overlay"></div>
-    <div class="modal">
-        <div class="close">×</div>
+    <div class="ghost-overlay"></div>
+    <div class="ghost-modal">
+        <div class="ghost-modal-close">×</div>
         <h2>Preparation</h2>
         <p>Please set up the database connection and prepare the Users and Posts tables. Follow the Readme.md to insert data into each table. Make sure to have the data inserted.</p>
-        <a href= "<?php echo dirname($_SERVER['SCRIPT_NAME']); ?>/post" class="modal-btn">OK</a>
+        <a href= "<?php echo dirname($_SERVER['SCRIPT_NAME']); ?>/post" class="ghost-btn">OK</a>
     </div> 
 </div>
 <?php include('templates/layouts/footer.php'); ?>

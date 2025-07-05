@@ -1,156 +1,136 @@
-## The Elephant in the Room
+# Ghost PHP
 
-### 1. Overview
+## 1. Overview（概要）
 
-- 'the Elephant in the room' is my private PHP flame work.
+- **Ghost PHP** は、私が開発したプライベートな PHP フレームワークです。
+- [ドキュメントはこちら / You can find the documentation here](https://sh-revue.net/projects/ghostphp)
 
-### 2. Project Code is "Gladiolus"
+## 2. Set up（セットアップ）
 
-- This project code is named Gladiolus. The gladiolus flower symbolizes strength, integrity, and victory, reflecting the essence of this PHP framework. Just as the gladiolus stands tall and resilient, this framework aims to empower developers with robust and reliable tools to build outstanding web applications. 
+### プロジェクトのクローンと依存パッケージのインストール / Clone & Install
 
-### 3. Set up
-
-#### Clone Projectes & Install Packages
-- Let's start by cloning the project.
-    ```
-    git clone https://github.com/sh-kikuchi/the-elephant-in-the-room.git
-    ```
-
-- After that, let's run `composer install`.
-    ```
-    composer install
-    ```
-
-#### Connect Database
-- Prepare a `.env` file in the project directory and configure it as follows:
-  ```env
-    DB_HOST = 'localhost'
-    DB_NAME = 'test'
-    DB_USER = 'root'
-    DB_PASS = ''
-    PASSWORD = 'password'
-  ```
-
-- To create the table, please run the following command:
-    ```
-    　php elephant migrate
-    ```
-
-- To insert data into the table, please run the following command:
-    ```php
-    　php elephant seed     
-    ```
-
-#### Data Import and Export via CSV
-- Importing Data
-To import data into a table, for example, the users table, create a CSV file named users.csv in the Storage/csv directory. The first row of the CSV should contain column names. Run the following command from the project directory:
-
-  ```
-  php elephant importCSV users
-  ```
-
-- Exporting Data
-To export data, run the following command from the project directory. This is an example for exporting posts.
-
-  ```
-  php elephant exportCSV posts
-  ```
-
-### 4. Architecture
-#### 3-tier architecture
-- This framework is based on a 3-tier architecture, consisting of three layers: Model, Service, and View.
-  - **Model**: Handles database operations and business logic.
-    - *Entity*: Represents database tables as classes.
-    - *Repository*: Encapsulates the actual logic for database operations, handling CRUD operations for Entities.
-  
-  - **Service**: Processes business logic and acts as an intermediary between Model and View.
-  
-  - **View**: Manages the user interface presented to the user.
-
-This design improves code readability and maintainability, allowing each layer to be developed, tested, and modified independently.
-Moreover,By providing interfaces for models and services, you can write type-safe and clean code.
-
-[![Architecture](https://private-user-images.githubusercontent.com/74047781/309458711-c1dc0e24-7712-4c47-b651-734fbf369ed2.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MjA3MDQ2MTYsIm5iZiI6MTcyMDcwNDMxNiwicGF0aCI6Ii83NDA0Nzc4MS8zMDk0NTg3MTEtYzFkYzBlMjQtNzcxMi00YzQ3LWI2NTEtNzM0ZmJmMzY5ZWQyLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDA3MTElMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwNzExVDEzMjUxNlomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTE3MjI0OTFhZGIxNzAwYTQ5NDg3MTkwYjhkODE4NDVkMjRkYmFiZDk2YzViYmI0NzRjNmJmMjhhOGQ4NThkZWEmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.hQkFMWPQXAIai-K_TH3XFgIA6SkqmlGQG9sQV0-yQHA)](https://private-user-images.githubusercontent.com/74047781/309458711-c1dc0e24-7712-4c47-b651-734fbf369ed2.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MjE5MTE0MTAsIm5iZiI6MTcyMTkxMTExMCwicGF0aCI6Ii83NDA0Nzc4MS8zMDk0NTg3MTEtYzFkYzBlMjQtNzcxMi00YzQ3LWI2NTEtNzM0ZmJmMzY5ZWQyLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDA3MjUlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwNzI1VDEyMzgzMFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTNiOTFkNDhjNWUwNzVkMmYwZDM3ZmJlNDE2NDJmMWZkNjU4MWEwNzU4ODYxZjdlNmUxZmZiZmUxMjNiYmNmZjMmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.utOq5QUfFnhpbU6nHfZ8-NNKonTWWEZhgcGJIHqCYXg)
-
-#### 5. Directory
+```bash
+git clone https://github.com/sh-kikuchi/GhostPHP.git
+cd GhostPHP
+composer install
 ```
-├─axis
-│  ├─database       // Database connection
-│  ├─https          // Request and response management
-│  ├─routes         // Routing management
-│  └─toolbox
-│      ├─commands    // Command processing
-│      └─functions   // Functions primarily used in view files
-├─config             // Configuration
-├─form_classes       // Classes managing form data
-├─interfaces         // Interfaces
+
+### データベース接続設定 / Connect Database
+
+- プロジェクト直下に `.env` ファイルを作成し、以下のように設定してください:
+
+```env
+DB_HOST = 'localhost'
+DB_NAME = 'test'
+DB_USER = 'root'
+DB_PASS = ''
+PASSWORD = 'password'
+```
+
+### マイグレーションとシーディング / Migration & Seeding
+
+- テーブルを作成します:
+
+```bash
+php ghost migrate
+```
+
+- テーブルに初期データを挿入します:
+
+```bash
+php ghost seed
+```
+
+### CSVによるデータのインポート・エクスポート / CSV Import & Export
+
+#### インポート（例：usersテーブル）
+
+`Storage/csv` に `users.csv` を配置し、以下を実行:
+
+```bash
+php ghost importCSV users
+```
+
+#### エクスポート（例：postsテーブル）
+
+```bash
+php ghost exportCSV posts
+```
+
+## 3. Architecture（アーキテクチャ）
+
+### 三層構造 / 3-Tier Architecture
+
+このフレームワークは以下の3層構造に基づいています：
+
+- **Model（モデル）**: データベース処理とビジネスロジックを担当  
+  - *Entity*: テーブルを表すクラス  
+  - *Repository*: CRUD操作をカプセル化
+
+- **Service（サービス）**: Model と View の橋渡しをするビジネスロジック層
+
+- **View（ビュー）**: ユーザーインターフェースを担当
+
+> 各レイヤーを独立して開発・テスト・保守可能にすることで、コードの可読性と保守性が向上します。
+
+さらに、Model や Service にインターフェースを設けることで、型安全でクリーンなコードを書くことができます。
+
+## 4. Directory（ディレクトリ構成）
+
+```txt
+├─aura
+│  ├─database       // DB接続
+│  ├─https          // リクエスト・レスポンス管理
+│  ├─routes         // ルーティング
+│  └─utils
+│      ├─commands    // CLIコマンド処理
+│      └─functions   // 主にView用関数
+├─config             // 設定ファイル
+├─form_classes       // フォームデータ管理クラス
+├─interfaces         // 各種インターフェース
 │  ├─form_classes
 │  ├─models
 │  └─services
-├─logs               // Logs
-├─migrations         // Migrations (tables)
-│  ├─csv            // CSV import/export
-│  ├─migrate        // Table creation
-│  └─seed           // Data insertion
-├─models             // Model classes
+├─logs               // ログ
+├─migrations         // マイグレーション
+│  ├─csv
+│  ├─migrate
+│  └─seed
+├─models             // モデル層
 │  ├─entities
 │  └─repositories
-├─public             // Public assets (JS, CSS, images)
+├─public             // 公開用アセット
 │  └─assets
 │      ├─css
 │      ├─img
 │      └─js
-├─services           // Service classes
-├─storage            // Storage
+├─services           // サービス層
+├─storage            // 一時ファイルなど
 │  ├─csv
 │  └─doc
-└─templates          // Template files
-    ├─errors         // Error pages
-    └─layouts        // Headers and footers
-
+└─templates          // テンプレート
+    ├─errors         // エラーページ
+    └─layouts        // ヘッダー・フッター
 ```
 
-#### Sample App
-- I have prepared a sample application, a simple CRUD app with two tables: Users and Posts.
+### Sample App（サンプルアプリ）
 
-### 6. Dependencies
-- `guzzlehttp/guzzle`: PHP library for simplifying HTTP requests.
-- `vlucas/phpdotenv` : PHP library for loading environment variables.
-- `phpunit/phpunit`  : PHP testing framework.
+- ユーザーと投稿テーブルを持つ簡易なCRUDアプリケーションを用意しています。
 
-### 7. Testing
-- You can execute tests using PHPUnit. Here's an example of running tests.
+## 5. Dependencies（依存ライブラリ）
 
-  ```
-  vendor/bin/phpunit tests\form_classes\PostRequestTest.php
-  ```
+- `guzzlehttp/guzzle` - HTTPリクエストを簡易化するライブラリ
+- `vlucas/phpdotenv` - 環境変数を読み込むライブラリ
+- `phpunit/phpunit` - PHPテストフレームワーク
 
-### 8. License
+## 6. Testing（テスト）
 
-> MIT License
-> 
-> Copyright (c) 2024 The Elephant in the Room
-> 
-> Permission is hereby granted, free of charge, to any person obtaining a copy
-> of this software and associated documentation files (the "Software"), to deal
-> in the Software without restriction, including without limitation the rights
-> to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-> copies of the Software, and to permit persons to whom the Software is
-> furnished to do so, subject to the following conditions:
-> 
-> The above copyright notice and this permission notice shall be included in all
-> copies or substantial portions of the Software.
-> 
-> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-> FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-> AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-> LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-> OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-> SOFTWARE.
->
+- PHPUnit を使用してテストを実行できます。例：
 
-### 9. Contribution
-- I might be whimsical at times, but contributions are always welcome. Please report bugs or suggest new features through GitHub Issues. I can't handle it all alone. Help me out! 😄
+```bash
+vendor/bin/phpunit tests/form_classes/PostRequestTest.php
+```
 
-Thank you to all my friends, PHPers.
+---
+
+🎉 Thank you to all my friends, PHPers!  

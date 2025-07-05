@@ -2,7 +2,7 @@
 
 namespace app\services;
 
-use app\models\entities\PostEntity as Post;
+use app\entities\PostEntity as Post;
 
 /**
  * Interface IPostService

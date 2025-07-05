@@ -2,11 +2,11 @@
 
 namespace app\form_classes;
 
-use app\axis\toolbox\Session;
-use app\axis\https\Validator;
-use app\axis\https\Redirect;
-use app\models\repositories\PostRepository;
-use app\axis\database\DataBaseConnect;
+use app\aura\utils\Session;
+use app\aura\utils\Validator;
+use app\aura\https\Redirect;
+use app\repositories\PostRepository;
+use app\aura\database\DataBaseConnect;
 
 require_once 'interfaces\form_classes\IPostRequest.php';
 

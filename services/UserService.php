@@ -2,14 +2,14 @@
 
 namespace app\services;
 
-use app\axis\Service;
-use app\axis\Template;
-use app\axis\https\Redirect;
-use app\axis\toolbox\Session;
-use app\axis\toolbox\File;
-use app\axis\toolbox\Mail;
-use app\models\entities\UserEntity as User;
-use app\models\repositories\UserRepository;
+use app\aura\Service;
+use app\aura\Template;
+use app\aura\https\Redirect;
+use app\aura\utils\Session;
+use app\aura\utils\File;
+use app\aura\utils\Mail;
+use app\entities\UserEntity as User;
+use app\repositories\UserRepository;
 use app\form_classes\UserRequest;
 
 /**
@@ -26,6 +26,7 @@ class UserService extends Service implements IUserService {
      * UserService constructor.
      */
     public function __construct() {
+        parent::__construct();
         $session = new Session;
     }
 
@@ -92,20 +93,30 @@ class UserService extends Service implements IUserService {
             return false;
         }
 
-        // Create an instance
-        $user = new UserRepository();
-        $user_request = $this->makeUser($_POST, 'signup');
+        // Start transaction
+        $this->beginTransaction();
 
-        // Execute methods
-        $result = $user->signup($user_request);
+        try {
+            // Create an instance
+            $user = new UserRepository();
+            $user_request = $this->makeUser($_POST, 'signup');
 
-        // Transitioning screen
-        if ($result) {
+            // Execute methods
+            $result = $user->signup($user_request);
+
+            if (!$result) {
+                throw new \Exception('Post creation failed.');
+            }
+
+            // Commit transaction
+            $this->commit();
+
+            // Redirect
             Redirect::to('index');
-            exit();
-        } else {
-            Redirect::error(500);
-            exit();
+
+        } catch (\Exception $e) {
+            $this->rollBack();
+            Redirect::error(500);  
         }
     }
 

@@ -1,6 +1,6 @@
 <?php include('templates/layouts/header.php'); ?>
 
-<div class="wrapper">
+<div class="ghost-wrapper">
     <?php if (isset($errors)) : ?>
         <ul>
         <?php foreach($errors as $error) { ?>
@@ -26,7 +26,7 @@
                 <input type="text" name="body" class="form-input" value="<?php echo isset($old) ? h($old['body']) : (isset($post) ? h($post['body']) : ''); ?>">
             </div>
             <div class="flex-box justify-center">
-                <button type="submit" class="button primary"><?php echo isset($post) ? "UPDATE" : "CREATE"; ?></button>
+                <button type="submit" class="ghost-btn"><?php echo isset($post) ? "UPDATE" : "CREATE"; ?></button>
             </div>
         </form>
     </section>

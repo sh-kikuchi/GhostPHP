@@ -3,7 +3,7 @@
 require 'vendor/autoload.php'; // Composer autoloader
 
 use GuzzleHttp\Client;
-use app\axis\database\DataBaseConnect;
+use app\aura\database\DataBaseConnect;
 
 /**
  * Class UsersSeeder
@@ -16,6 +16,11 @@ class UsersSeeder
      * @var Client The Guzzle HTTP client instance.
      */
     private $client;
+
+    /**
+     * @var DataBaseConnect The database connection handler instance.
+     */
+    private DataBaseConnect $dbConnect;
 
     /**
      * @var \PDO The PDO instance for database interaction.

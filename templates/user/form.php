@@ -1,5 +1,5 @@
 <?php include('templates/layouts/header.php') ?>
-<div class="wrapper">
+<div class="ghost-wrapper">
     <?php if (isset($errors)) : ?>
       <ul>
       <?php foreach($errors as $error) {?>
@@ -42,7 +42,7 @@
             </div>
           <!-- submit -->
           <div class="submit-area flex-box justify-center my-2">
-              <button type="submit" class="button primary "> <?php echo $form_name === 'signup' ? "SIGN UP" : "SIGN IN";?></button>
+              <button type="submit" class="ghost-btn"> <?php echo $form_name === 'signup' ? "SIGN UP" : "SIGN IN";?></button>
           </div>
           <!-- link-area -->
           <div class="link-area">

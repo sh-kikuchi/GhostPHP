@@ -2,46 +2,51 @@
 
 namespace app\services;
 
-use app\axis\Service;
-use app\axis\Template;
-use app\axis\https\Redirect;
-use app\axis\toolbox\Session;
+use app\aura\Service;
+use app\aura\Template;
+use app\aura\Logger;
+use app\aura\https\Redirect;
+use app\aura\utils\Session;
 use app\form_classes\PostRequest;
-use app\models\entities\PostEntity as Post;
-use app\models\repositories\PostRepository;
-use app\models\repositories\UserRepository;
+use app\entities\PostEntity as Post;
+use app\repositories\PostRepository;
+use app\repositories\UserRepository;
 
-/**
- * Class PostService
- * 
- * Handles business logic related to posts, including creation, updating,
- * deletion, and rendering of post-related views.
- *
- * @package app\services
- */
 class PostService extends Service implements IPostService {
+
+    /**
+     * PostService constructor.
+     * Initializes the base service and session handler.
+     */
+    public function __construct() {
+        parent::__construct();
+        $session = new Session;
+    }
 
     /**
      * Display the list of posts with pagination.
      *
-     * @return string The rendered template.
+     * @return string|null Rendered HTML view of post index, or null if redirected.
      */
     public function index() {
-        // Send form name for setting the token. 
+        $logger = new Logger();
         $csrf = $this->setToken('post_delete');
-
+    
         $user = new UserRepository();
         $result = $user->checkSign();
+    
         if (!$result) {
+            $logger->warn('User not signed in, redirecting to signin page.');
             Redirect::to('signin');
             return;
         }
-
+    
         $repository = new PostRepository();
         $showData = $repository->show();
         $pagination = paginate($showData, 10);
-
-        // Rendering
+    
+        $logger->info('Posts fetched and pagination applied.');
+    
         $template = new Template(
             'post/index', [
                 'csrf' => $this->setToken('post_delete'),
@@ -50,16 +55,18 @@ class PostService extends Service implements IPostService {
                 'errors' => $_SESSION['errors'] ?? null
             ]
         );
-
+    
         unset($_SESSION['errors']);
-
+    
+        $logger->info('Rendering post index template.');
+    
         return $template->render();
     }
 
     /**
      * Show the form to create a new post.
      *
-     * @return string The rendered template.
+     * @return string|null Rendered HTML form or null if redirected.
      */
     public function showCreateForm() {
         new Session;
@@ -90,7 +97,7 @@ class PostService extends Service implements IPostService {
     /**
      * Show the form to update an existing post.
      *
-     * @return string The rendered template.
+     * @return string|null Rendered HTML form or null if redirected.
      */
     public function showUpdateForm() {
         new Session;
@@ -121,7 +128,7 @@ class PostService extends Service implements IPostService {
     }
 
     /**
-     * Create a new post.
+     * Create a new post from form data.
      *
      * @return bool True on success, false on failure.
      */
@@ -132,23 +139,35 @@ class PostService extends Service implements IPostService {
             return false;
         }
 
-        // Create an instance
-        $post = new PostRepository();
-        $post_request = $this->makePost($_POST);
+        // Start transaction
+        $this->beginTransaction();
 
-        // Execute query
-        $result = $post->create($post_request);
+        try {
+            // Create an instance
+            $post = new PostRepository();
+            $post_request = $this->makePost($_POST);
 
-        // Redirect
-        if ($result) {
+            // Execute query
+            $result = $post->createPost($post_request);
+
+            if (!$result) {
+                throw new \Exception('Post creation failed.');
+            }
+
+            // Commit transaction
+            $this->commit();
+
+            // Redirect
             Redirect::to('post');
-        } else {
+        } catch (\Exception $e) {
+            // Rollback transaction in case of an error
+            $this->rollBack();
             Redirect::error(500);
         }
     }
 
     /**
-     * Update an existing post.
+     * Update an existing post from form data.
      *
      * @return bool True on success, false on failure.
      */
@@ -159,23 +178,35 @@ class PostService extends Service implements IPostService {
             return false;
         }
 
-        // Create an instance
-        $post = new PostRepository();
-        $post_request = $this->makePost($_POST);
+        // Start transaction
+        $this->beginTransaction();
 
-        // Execute query
-        $result = $post->update($post_request);
+        try {
+            // Create an instance
+            $post = new PostRepository();
+            $post_request = $this->makePost($_POST);
 
-        // Redirect
-        if ($result) {
+            // Execute query
+            $result = $post->updatePost($post_request);
+
+            if (!$result) {
+                throw new \Exception('Post update failed.');
+            }
+
+            // Commit transaction
+            $this->commit();
+
+            // Redirect
             Redirect::to('post');
-        } else {
+        } catch (\Exception $e) {
+            // Rollback transaction in case of an error
+            $this->rollBack();
             Redirect::error(500);
         }
     }
 
     /**
-     * Delete an existing post.
+     * Delete a post based on form input.
      *
      * @return bool True on success, false on failure.
      */
@@ -186,28 +217,40 @@ class PostService extends Service implements IPostService {
             return false;
         }
 
-        // Create an instance
-        $post = new PostRepository();
-        $post_request = $this->makePost($_POST);
+        // Start transaction
+        $this->beginTransaction();
 
-        // Execute query
-        $result = $post->delete($post_request);
+        try {
+            // Create an instance
+            $post = new PostRepository();
+            $post_request = $this->makePost($_POST);
 
-        // Redirect
-        if ($result) {
+            // Execute query
+            $result = $post->deletePost($post_request);
+
+            if (!$result) {
+                throw new \Exception('Post deletion failed.');
+            }
+
+            // Commit transaction
+            $this->commit();
+
+            // Redirect
             Redirect::to('post');
-        } else {
+        } catch (\Exception $e) {
+            // Rollback transaction in case of an error
+            $this->rollBack();
             Redirect::error(500);
         }
     }
 
     /**
-     * Create a Post entity from the form data.
+     * Create a Post entity instance from submitted form data.
      *
-     * @param array $post_form The form data.
-     * @return Post The Post entity.
+     * @param array $post_form Form data from POST request.
+     * @return Post The constructed Post entity.
      */
-    public function makePost(array $post_form):Post {
+    public function makePost(array $post_form): Post {
         $post = new Post();
         $post_request = new PostRequest($post_form);
 

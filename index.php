@@ -3,13 +3,13 @@
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/bootstrap.php';
 
-use app\axis\App;
+use app\aura\App;
 use app\services\UserService;
 use app\services\PostService;
 
 $app = new App();
 
-$app->router->get('',      function () { include "templates/welcome.php"; });
+$app->router->get('', function () { include "templates/welcome.php"; });
 $app->router->get('error', function () { include "templates/errors/error.php";});
 
 //users

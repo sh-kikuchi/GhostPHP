@@ -1,0 +1,248 @@
+
+.input-init{
+    margin: 0 ; 
+    padding: 0 ; 
+    background: none;
+    border: none; 
+    border-radius: 0 ; 
+    outline: none; 
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    font-size: 25px;
+}
+/*********************************
+* Header
+*********************************/
+.ghost-header{
+  background-color: #a59aca; /*FujiMurasaki*/
+  height: 50px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #CFC9D6; /*lavender gray*/
+  padding-right: 10px;
+  padding-left: 10px;
+}
+.ghost-header> #title {
+  font-size: 25px;
+  font-weight: 800;
+}
+.ghost-header> #menu> a {
+  color: #CFC9D6;
+  text-decoration: none;
+  padding-right: 10px;
+  padding-left: 10px;
+}
+.ghost-header-nav {
+  position: fixed;
+  right: -250px;
+  top: 50px;
+}
+/*********************************
+* Header: hamburger-menu
+*********************************/
+.ghost-hamburger {
+  background-color: transparent;
+  border-color: transparent;
+  z-index: 9999;
+}
+.ghost-hamburger span {
+  width: 25px;
+  height: 3px;
+  background-color: #000;
+  position: relative;
+  transition: ease .4s;
+  display: block;
+}
+.ghost-hamburger span:nth-child(1) {
+  top: 0;
+}
+
+.ghost-hamburger span:nth-child(2) {
+  margin: 6px 0;
+}
+
+.ghost-hamburger span:nth-child(3) {
+  top: 0;
+}
+/*active*/
+.ghost-hamburger.active span:nth-child(1) {
+  top: 5px;
+  transform: rotate(45deg);
+}
+
+.ghost-hamburger.active span:nth-child(2) {
+  opacity: 0;
+}
+.ghost-hamburger.active span:nth-child(3) {
+  top: -13px;
+  transform: rotate(-45deg);
+}
+
+/*****navigation*****/
+.ghost-nav{
+  margin-top: 0px;
+  margin-bottom: 0px;
+  background-color: #CFC9D6;
+}
+.ghost-nav-items {
+  padding-left: 0px;
+}
+.ghost-nav-item {
+  list-style: none;
+}
+.ghost-nav-item a {
+  color: black;
+  width: 200px;
+  display: block;
+  text-align: center;
+  font-size: 20px;
+  margin-bottom: 24px;
+  text-decoration: none;
+}
+/*active*/
+.ghost-header-nav.active {
+  right: 0px;
+  transition: ease .4s;
+}
+
+/*********************************
+* Wrapper
+*********************************/
+.ghost-wrapper{
+  min-height: calc(100vh - 75px);
+}
+/*********************************
+* footer
+*********************************/
+.ghost-footer{
+  margin: 0;
+  height: 25px;
+  color: whitesmoke;
+  background-color:#3A2F4B;
+  font-size: 15px;
+  text-align: center;
+}
+/*********************************
+* pagenation
+*********************************/
+.pagenation{
+  width: 20px;
+  height: 20px;
+  padding: 10px;
+  margin-left: 5px;
+  margin-right: 5px;
+  text-align: center;
+  text-decoration: none;
+  color: #CFC9D6;
+  background-color: #895b8a; /*KodaiMurasaki*/
+  border-radius: 50%;
+}
+
+/*********************************
+* button
+*********************************/
+.ghost-btn, .ghost-modal-btn {
+  display: inline-block;
+  text-decoration: none;
+  padding: 10px 20px;
+  background: #895b8a; /*KodaiMurasaki*/
+  border: transparent;
+  border-radius: 5px;
+  color: whitesmoke;
+  margin: 20px;
+  transition: 0.3s;
+}
+.ghost-btn:hover {
+  opacity: 0.8;
+}
+
+/*********************************
+* Tab
+*********************************/
+.ghost-tab-list{
+  margin: 0;
+  padding: 0;
+}
+.ghost-tab-list li{
+  width: 120px;
+  border: 1px solid #333;
+  border-left: none;
+  border-bottom: none;
+  font-size: 20px;
+  text-align: center;
+  padding: 10px;
+  color: #333;
+  transition: 0.2s ease;
+  cursor: pointer;
+  list-style: none;
+  &:first-child {
+    border-left: 1px solid #333;
+  }
+  &.active {
+    background: #a59aca; /*KodaiMurasaki*/;
+    color: #fff;
+  } 
+}
+.ghost-tab-container {
+  border: 1px solid #333;
+
+  line-height: 2;
+}
+.ghost-tab-content {
+  display: none;
+  &.active {
+    display: block;
+  }
+}
+/*********************************
+ghost-modal
+*********************************/
+.ghost-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);  
+  opacity: 0;
+  visibility: hidden;
+  transition: .3s;
+}
+.ghost-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+.ghost-modal {
+  max-width: 500px;
+  width: 86%;
+  padding: 15px 20px;
+  background: #fff;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  visibility: hidden;
+  transition: .3s;
+}
+.ghost-modal.active {
+  opacity: 1;
+  visibility: visible;
+}
+.ghost-modal .ghost-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  cursor: pointer;
+  font-size: 20px;
+}
+.ghost-modal h2 {
+  font-size: 18px;
+  font-weight: normal;
+  margin-bottom: 10px;
+}
+.ghost-modal p {
+  font-size: 13px;
+}

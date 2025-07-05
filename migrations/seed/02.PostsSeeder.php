@@ -3,7 +3,7 @@
 require 'vendor/autoload.php'; // Composer autoloader
 
 use GuzzleHttp\Client;
-use app\axis\database\DataBaseConnect;
+use app\aura\database\DataBaseConnect;
 
 /**
  * Class PostsSeeder
@@ -16,6 +16,11 @@ class PostsSeeder {
      * @var Client The Guzzle HTTP client instance.
      */
     private $client;
+
+    /**
+     * @var DataBaseConnect The database connection handler instance.
+     */
+    private DataBaseConnect $dbConnect;
 
     /**
      * @var \PDO The PDO instance for database interaction.
@@ -52,8 +57,15 @@ class PostsSeeder {
             // Decode the response body in JSON format
             $posts = json_decode($response->getBody(), true);
 
-            // Display data
             foreach ($posts as $post) {
+
+                // search user
+                $user_id = $post['userId'];
+                $stmt = $this->pdo->prepare("SELECT 1 FROM users WHERE id = ?");
+                $stmt->execute([$user_id]);
+                $user_exists = $stmt->fetch();
+
+                // inser into posts
                 $stmt = $this->pdo->prepare('INSERT INTO posts (user_id, title, body) VALUES (:user_id, :title, :body)');
                 $stmt->execute([
                     ':user_id' => $post['userId'],

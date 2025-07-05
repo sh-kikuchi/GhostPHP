@@ -2,7 +2,7 @@
 
 namespace app\services;
 
-use app\models\entities\UserEntity as User;
+use app\entities\UserEntity as User;
 
 /**
  * Interface IUserService
