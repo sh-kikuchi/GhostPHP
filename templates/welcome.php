@@ -1,15 +1,13 @@
-<?php include('templates/layouts/header.php'); ?>
-
 <?php
 $imageUrls = [
     '/public/assets/img/architects_daugher.png',
     '/public/assets/img/microma.png',
     '/public/assets/img/special_elete.png',
 ];
-
 $randomImage = $imageUrls[array_rand($imageUrls)];
 ?>
 
+<?php include('templates/layouts/header.php'); ?>
     <div class="ghost-wrapper">
         <section class="py-2 flex-box justify-center align-center">
             <div>
@@ -22,5 +20,5 @@ $randomImage = $imageUrls[array_rand($imageUrls)];
 
             </div>
         </section>
-    <div>
+    </div>
 <?php include('templates/layouts/footer.php'); ?>

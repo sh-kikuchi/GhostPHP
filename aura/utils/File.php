@@ -5,49 +5,62 @@ namespace app\aura\utils;
 use app\config\Message;
 use app\aura\https\Redirect;
 
-class File {
+class File
+{
     /**
-     * uploaded_file
-     * @param array $file_data 
-     * @return boolean $result
+     * Handles file upload processing.
+     *
+     * @since 1.1.0
+     * @updated 2026-02-11
+     * Changes:
+     * - Added support for multiple file uploads.
+     * - Refactored internal processing logic.
+     *
+     * @param array $file_data The $_FILES array.
+     * @return array Upload result data.
      */
-    function uploadFile($file_data) {
-      $result = false;
-      if (empty($file_data['upfile']['full_path'])) {
-          $_SESSION['msg'] = 'No files have been uploaded.';
-          Redirect::to('index');
-          exit();
-      } 
-  
-      if ($file_data['upfile']['error'] !== UPLOAD_ERR_OK) {
-          $msg = [
-              UPLOAD_ERR_INI_SIZE   => Message::UPLOAD_ERR['INT_SIZE'],
-              UPLOAD_ERR_PARTIAL    => Message::UPLOAD_ERR['PARTIAL'],
-              UPLOAD_ERR_NO_FILE    => Message::UPLOAD_ERR['NO_FILE'],
-              UPLOAD_ERR_NO_TMP_DIR => Message::UPLOAD_ERR['NO_TMP_DIR'],
-              UPLOAD_ERR_CANT_WRITE => Message::UPLOAD_ERR['CANT_WRITE'],
-              UPLOAD_ERR_EXTENSION  => Message::UPLOAD_ERR['EXTENSION'],
-          ];
-          $err_msg = $msg[$file_data['upfile']['error']] ?? 'Unknown upload error.';
-      } else {
-          // 拡張子チェック
-          $extension = strtolower(pathinfo($file_data['upfile']['name'], PATHINFO_EXTENSION));
-          $allowed_extensions = ['gif', 'jpg', 'jpeg', 'png'];
-  
-          if (!in_array($extension, $allowed_extensions)) {
-              $err_msg = Message::UPLOAD_ERR['NOT_IMAGE'];
-          } else {
-              $src  = $file_data['upfile']['tmp_name']; // temporary file path
-              $dest = 'storage/' . $file_data['upfile']['name'];
-  
-              if (!move_uploaded_file($src, $dest)) {
-                  $err_msg = Message::UPLOAD_ERR['FAILED'];
-              } else {
-                  $result = true;
-              }
-          }
-      }
-      return $result;
-  }
+    public function uploadFile(array $file_data): array
+    {
+        $results = [];
+
+        foreach ($file_data as $inputName => $data) {
+
+            if (is_array($data['name'])) {
+                foreach ($data['name'] as $i => $name) {
+                    $results[] = $this->processFile([
+                        'name'     => $data['name'][$i],
+                        'tmp_name' => $data['tmp_name'][$i],
+                        'error'    => $data['error'][$i],
+                    ]);
+                }
+            } else {
+                $results[] = $this->processFile($data);
+            }
+        }
+
+        return $results;
+    }
+
+    private function processFile(array $file): array
+    {
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            return ['success' => false, 'message' => 'Upload error'];
+        }
+
+        $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        $allowed_extensions = ['gif', 'jpg', 'jpeg', 'png'];
+
+        if (!in_array($extension, $allowed_extensions)) {
+            return ['success' => false, 'message' => 'Invalid file type'];
+        }
+
+        $dest = 'storage/' . uniqid('', true) . '.' . $extension;
+
+        if (!move_uploaded_file($file['tmp_name'], $dest)) {
+            return ['success' => false, 'message' => 'Failed to save file'];
+        }
+
+        return ['success' => true, 'path' => $dest];
+    }
 }
 ?>

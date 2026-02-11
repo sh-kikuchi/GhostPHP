@@ -79,7 +79,7 @@
                             <div class="flex-box justify-center">
                                 <form method ="POST" action="<?php echo dirname($_SERVER['SCRIPT_NAME']); ?>/upload" enctype="multipart/form-data">
                                     <input type="hidden" name="max_file_size" value="1000000">
-                                    <input id="upload"  type="file" name="upfile" size="40">
+                                    <input id="upload"  type="file" name="upfile[]" size="40" multiple>
                                     <div class="flex-box justify-center mt-2">
                                         <button class="ghost-btn">Upload</button>
                                     </div>
