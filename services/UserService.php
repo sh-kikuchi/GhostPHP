@@ -10,7 +10,7 @@ use app\aura\utils\File;
 use app\aura\utils\Mail;
 use app\entities\UserEntity as User;
 use app\repositories\UserRepository;
-use app\form_classes\UserRequest;
+use app\requests\UserRequest;
 
 /**
  * Class UserService

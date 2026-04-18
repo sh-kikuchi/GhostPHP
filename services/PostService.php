@@ -7,7 +7,7 @@ use app\aura\Template;
 use app\aura\Logger;
 use app\aura\https\Redirect;
 use app\aura\utils\Session;
-use app\form_classes\PostRequest;
+use app\requests\PostRequest;
 use app\entities\PostEntity as Post;
 use app\repositories\PostRepository;
 use app\repositories\UserRepository;

@@ -1,11 +1,11 @@
 <?php
-namespace app\form_classes;
+namespace app\requests;
 
 use app\aura\utils\Session;
 use app\aura\utils\Validator;
 use app\aura\https\Redirect;
 
-require_once 'interfaces\form_classes\IUserRequest.php';
+require_once 'interfaces\requests\IUserRequest.php';
 
 /**
  * Class UserRequest

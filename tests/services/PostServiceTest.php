@@ -5,7 +5,7 @@ use PHPUnit\Framework\TestCase;
 use app\aura\Service;
 use app\aura\Template;
 use app\aura\utils\Session;
-use app\form_classes\PostRequest;
+use app\requests\PostRequest;
 use app\services\PostService;
 use app\entities\PostEntity;
 use app\repositories\UserRepository;

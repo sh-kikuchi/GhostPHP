@@ -1,8 +1,8 @@
-<!-- vendor/bin/phpunit tests\form_classes\PostRequestTest.php -->
+<!-- vendor/bin/phpunit tests\requests\PostRequestTest.php -->
 <?php
 
 use PHPUnit\Framework\TestCase;
-use app\form_classes\PostRequest;
+use app\requests\PostRequest;
 
 /**
  * Class PostRequestTest

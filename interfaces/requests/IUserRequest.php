@@ -1,6 +1,6 @@
 <?php
 
-namespace app\form_classes;
+namespace app\requests;
 
 /**
  * Interface IUserRequest

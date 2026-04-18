@@ -1,8 +1,8 @@
-<!-- vendor/bin/phpunit tests\form_classes\UserRequestTest.php -->
+<!-- vendor/bin/phpunit tests\requests\UserRequestTest.php -->
 <?php
 
 use PHPUnit\Framework\TestCase;
-use app\form_classes\UserRequest;
+use app\requests\UserRequest;
 
 /**
  * Class UserRequestTest

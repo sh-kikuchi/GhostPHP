@@ -1,6 +1,6 @@
 <?php
 
-namespace app\form_classes;
+namespace app\requests;
 
 use app\aura\utils\Session;
 use app\aura\utils\Validator;
@@ -8,7 +8,7 @@ use app\aura\https\Redirect;
 use app\repositories\PostRepository;
 use app\aura\database\DataBaseConnect;
 
-require_once 'interfaces\form_classes\IPostRequest.php';
+require_once 'interfaces\requests\IPostRequest.php';
 
 /**
  * Class PostRequest
