@@ -1,7 +1,10 @@
 {
-    "name": "gladiolus/Ghost PHP",
-    "version": "1.1.0",
-    "time": "2023-08-13",
+    "name": "gladiolus/ghostphp",
+    "version": "3.2.0",
+    "meta": {
+        "created_at": "2023-08-13",
+        "updated_at": "2026-04-18"
+    },
     "description": "My private PHP framework developed as part of the 'Gladiolus' project.",
     "authors": [
         {
@@ -18,7 +21,8 @@
     "require": {
         "guzzlehttp/guzzle": "^7.8",
         "tecnickcom/tcpdf": "^6.6",
-        "vlucas/phpdotenv": "^5.6"
+        "vlucas/phpdotenv": "^5.6",
+        "phpmailer/phpmailer": "^7.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^10.5"

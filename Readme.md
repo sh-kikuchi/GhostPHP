@@ -5,77 +5,77 @@
 - **Ghost PHP** は、私が開発したプライベートな PHP フレームワークです。
 - [ドキュメントはこちら / You can find the documentation here](https://sh-revue.net/projects/ghostphp)
 
-## 2. Set up（セットアップ）
+## 2. Architecture（アーキテクチャ）
 
-### プロジェクトのクローンと依存パッケージのインストール / Clone & Install
+```
+[ Client ]
+     │
+     ▼
+[ Router (aura/routes) ]
+     │
+     ▼
+[ Request (requests) ]
+     │   └─ Validation / Data shaping
+     ▼
+[ Service (services) ]   ← ★ Core（ユースケース）
+     │   └─ Business Logic
+     │
+     │   (fetch / persist via Repository)
+     ▼
+   ( domain data )
+     │
+     ▼
+[ Response ]
+     │   └─ Transform data into response
+     │
+     ├─ JSON Response (API)
+     └─ Template (HTML)
+     │
+     ▼
+[ Client ]
 
-```bash
-git clone https://github.com/sh-kikuchi/GhostPHP.git
-cd GhostPHP
-composer install
+----------------------------------------
+
+[ Repository (models/repositories) ]
+     │
+     │   ┌────────────────────────────┐
+     │   │   uses Entity              │
+     │   │   - hydrate (DB → Entity)  │
+     │   │   - persist (Entity → DB)  │
+     │   └────────────────────────────┘
+     ▼
+[ Database (aura/database) ]
 ```
 
-### データベース接続設定 / Connect Database
+### ■ Layer Responsibilities
+- Request
+  - 入力データの検証・整形
+- Service
+  - ユースケース単位のビジネスロジック
+  - Repository を通じてデータを取得・保存
+- Response
+  - Serviceの返したデータを最終形式（JSON / HTML）に変換
+- Repository
+  - データアクセス（CRUD）をカプセル化
+  - Entity を用いてDBとデータをやり取りする
+- Entity
+  - データベースとやり取りするデータ構造
 
-- プロジェクト直下に `.env` ファイルを作成し、以下のように設定してください:
 
-```env
-DB_HOST = 'localhost'
-DB_NAME = 'test'
-DB_USER = 'root'
-DB_PASS = ''
-PASSWORD = 'password'
-```
+### ■ Thin Framework Philosophy
 
-### マイグレーションとシーディング / Migration & Seeding
+Ghost PHP は Thin Framework を志向しています。
 
-- テーブルを作成します:
+最小限の構造のみを提供しつつ、強いレイヤー分離と拡張前提の設計を採用しています。
 
-```bash
-php ghost migrate
-```
+従来の開発現場では、Controller と Service の両方にロジックが分散し、責務が曖昧になるケースが見られることがありました。Ghost PHP ではこの構造を整理し、ビジネスロジックを Service に集約することで、責務の明確化や可読性の向上を目指しました。
 
-- テーブルに初期データを挿入します:
+また現代の開発環境では、AIによるコード生成、ライブラリ選定の高速化、開発スタイルの多様化が進んでいます。
 
-```bash
-php ghost seed
-```
+そのため Ghost PHP は、すべてを内包するフレームワークではなく、拡張可能な最小限の基盤を提供することを目的としています。
 
-### CSVによるデータのインポート・エクスポート / CSV Import & Export
 
-#### インポート（例：usersテーブル）
-
-`Storage/csv` に `users.csv` を配置し、以下を実行:
-
-```bash
-php ghost importCSV users
-```
-
-#### エクスポート（例：postsテーブル）
-
-```bash
-php ghost exportCSV posts
-```
-
-## 3. Architecture（アーキテクチャ）
-
-### 三層構造 / 3-Tier Architecture
-
-このフレームワークは以下の3層構造に基づいています：
-
-- **Model（モデル）**: データベース処理とビジネスロジックを担当  
-  - *Entity*: テーブルを表すクラス  
-  - *Repository*: CRUD操作をカプセル化
-
-- **Service（サービス）**: Model と View の橋渡しをするビジネスロジック層
-
-- **View（ビュー）**: ユーザーインターフェースを担当
-
-> 各レイヤーを独立して開発・テスト・保守可能にすることで、コードの可読性と保守性が向上します。
-
-さらに、Model や Service にインターフェースを設けることで、型安全でクリーンなコードを書くことができます。
-
-## 4. Directory（ディレクトリ構成）
+## 3. Directory（ディレクトリ構成）
 
 ```txt
 ├─aura
@@ -86,9 +86,9 @@ php ghost exportCSV posts
 │      ├─commands    // CLIコマンド処理
 │      └─functions   // 主にView用関数
 ├─config             // 設定ファイル
-├─form_classes       // フォームデータ管理クラス
+├─requests       // フォームデータ管理クラス
 ├─interfaces         // 各種インターフェース
-│  ├─form_classes
+│  ├─requests
 │  ├─models
 │  └─services
 ├─logs               // ログ
@@ -113,24 +113,81 @@ php ghost exportCSV posts
     └─layouts        // ヘッダー・フッター
 ```
 
-### Sample App（サンプルアプリ）
+## 4. Dependencies
+- guzzlehttp/guzzle
+- vlucas/phpdotenv
+- phpunit/phpunit
+- phpmailer/phpmailer
+  
+## 5. Set up（セットアップ）
 
-- ユーザーと投稿テーブルを持つ簡易なCRUDアプリケーションを用意しています。
-
-## 5. Dependencies（依存ライブラリ）
-
-- `guzzlehttp/guzzle` - HTTPリクエストを簡易化するライブラリ
-- `vlucas/phpdotenv` - 環境変数を読み込むライブラリ
-- `phpunit/phpunit` - PHPテストフレームワーク
-
-## 6. Testing（テスト）
-
-- PHPUnit を使用してテストを実行できます。例：
+### ■ プロジェクトのクローンと依存パッケージのインストール / Clone & Install
 
 ```bash
-vendor/bin/phpunit tests/form_classes/PostRequestTest.php
+git clone https://github.com/sh-kikuchi/GhostPHP.git
+cd GhostPHP
+composer install
 ```
 
----
+### ■ データベース接続設定 / Connect Database
 
-🎉 Thank you to all my friends, PHPers!  
+- プロジェクト直下に `.env` ファイルを作成し、以下のように設定してください:
+
+```env
+DB_HOST = 'localhost'
+DB_NAME = 'test'
+DB_USER = 'root'
+DB_PASS = ''
+PASSWORD = 'password'
+```
+
+### ■ マイグレーションとシーディング / Migration & Seeding
+
+- テーブルを作成します:
+
+```bash
+php ghost migrate
+```
+
+- テーブルに初期データを挿入します:
+
+```bash
+php ghost seed
+```
+
+### ■ CSVによるデータのインポート・エクスポート / CSV Import & Export
+
+#### インポート（例：usersテーブル）
+
+`Storage/csv` に `users.csv` を配置し、以下を実行:
+
+```bash
+php ghost importCSV users
+```
+
+#### エクスポート（例：postsテーブル）
+
+```bash
+php ghost exportCSV posts
+```
+
+### ■ メール設定
+- Ghost PHP はデフォルトで SMTP によるメール送信に対応しています。
+- 開発環境では smtp4dev を使用し、ローカルでメール送信をエミュレートする構成を推奨しています（事前セットアップが必要です）。
+- .env に以下の設定を記述してください。
+
+```
+MB_LANGUAGE=Japanese
+MB_INTERNAL_ENCODING=UTF-8
+
+SMTP_HOST=localhost
+SMTP_PORT=2525
+
+SMTP_USER=
+SMTP_PASS=
+
+SMTP_AUTH=false
+SMTP_SECURE=false
+
+MAIL_FROM=test@example.com
+```
