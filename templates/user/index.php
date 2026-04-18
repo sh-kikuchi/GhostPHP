@@ -60,8 +60,7 @@
                                                 placeholder="Please enter text."
                                                 cols="40"
                                                 rows="10"
-                                            >
-                                            </textarea>
+                                            ></textarea>
                                         </div>
                                         <div class="flex-box justify-center">
                                             <button type="submit" class="ghost-btn">Send</button>
