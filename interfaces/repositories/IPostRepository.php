@@ -2,7 +2,7 @@
 
 namespace app\repositories;
 
-use app\form_classes\PostRequest;
+use app\requests\PostRequest;
 use app\entities\PostEntity as Post;
 
 /**

@@ -29,7 +29,7 @@ class Response {
      * @return void
      */
     public function send() {
-        header($this->protocol_version . ' ' . $this->status_code . ' ' . $this->status_text);
+        header('HTTP/' . $this->protocol_version . ' ' . $this->status_code . ' ' . $this->status_text);
 
         foreach ($this->http_headers as $key => $val) {
             header($key . ': ' . $val);
@@ -47,7 +47,8 @@ class Response {
      */
     public function setContent($content, $contentType = 'text/html') {
         $this->content = $content;
-        $this->setHttpHeader('Content-Type', $contentType);
+        $this->header('Content-Type', $contentType);
+        return $this;
     }
 
     /**
@@ -57,9 +58,10 @@ class Response {
      * @param string $status_text The optional status text to set (default is an empty string).
      * @return void
      */
-    public function setStatusCode($status_code, $status_text = '') {
+    public function status($status_code, $status_text = '') {
         $this->status_code = $status_code;
         $this->status_text = $status_text;
+        return $this;
     }
 
     /**
@@ -69,7 +71,23 @@ class Response {
      * @param string $val The header value.
      * @return void
      */
-    public function setHttpHeader($header, $val) {
+    public function header($header, $val) {
         $this->http_headers[$header] = $val;
+        return $this;
+    }
+
+    /**
+     * Sets the response content as JSON and applies the appropriate Content-Type header.
+     *
+     * This method encodes the given data into JSON format and sets it as the response body.
+     * It also automatically sets the "Content-Type" header to "application/json".
+     *
+     * @param mixed $data The data to be JSON-encoded and sent in the response body.
+     * @return self Returns the current Response instance for method chaining.
+     */
+    public function json($data) {
+        $this->content = json_encode($data, JSON_THROW_ON_ERROR);
+        $this->header('Content-Type', 'application/json');
+        return $this;
     }
 }
