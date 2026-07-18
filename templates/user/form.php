@@ -2,9 +2,13 @@
 <div class="ghost-wrapper">
     <?php if (isset($errors)) : ?>
       <ul>
-      <?php foreach($errors as $error) {?>
-        <li class="text-center" style="list-style:none;"><?php echo h($error);?></li>
-      <?php }?>
+        <?php foreach ($errors as $error) { ?>
+          <?php foreach ($error as $message) { ?>
+            <li class="text-center" style="list-style:none;">
+              <?php echo h($message); ?>
+            </li>
+          <?php } ?>
+        <?php } ?>
       </ul>
     <?php endif; ?>
     <h2 class="text-center pt-2"> <?php echo $form_name === 'signup' ? "SIGN UP" : "SIGN IN";?></h2>

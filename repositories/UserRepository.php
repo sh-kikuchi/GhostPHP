@@ -2,21 +2,20 @@
 
 namespace app\repositories;
 
+use PDO;
 use app\aura\Repository;
 use app\entities\UserEntity as User;
 use app\aura\https\Redirect;
-use app\aura\database\DataBaseConnect;
 
 require_once 'interfaces/repositories/IUserRepository.php';
 
-class UserRepository extends Repository implements IUserRepository
-{
+class UserRepository extends Repository implements IUserRepository {
     /**
      * UserRepository constructor.
      * Initializes the repository for the 'users' table.
      */
-    public function __construct() {
-        parent::__construct('users');
+    public function __construct(?PDO $pdo = null){
+        parent::__construct('users', $pdo);
     }
 
     /**
@@ -52,6 +51,7 @@ class UserRepository extends Repository implements IUserRepository
      * @return bool True if authentication succeeds, false otherwise.
      */
     public function signin(User $user): bool {
+
         $result = false;
 
         $email = $user->getEmail();
@@ -65,7 +65,11 @@ class UserRepository extends Repository implements IUserRepository
         }
 
         if (password_verify($password, $user_data['password'])) {
-            session_regenerate_id(true);
+
+            if (session_status() === PHP_SESSION_ACTIVE) {
+                session_regenerate_id(true);
+            }
+
             $_SESSION['signin_user'] = $user_data;
             $result = true;
         } else {
@@ -83,7 +87,7 @@ class UserRepository extends Repository implements IUserRepository
      */
     public function getUserByEmail(string $email) {
         try {
-            return $this->findByColumn('email', $email);  // Repositoryの新メソッドを使用
+            return $this->findByColumn('email', $email);
         } catch (\Exception $e) {
             return false;
         }
@@ -105,7 +109,13 @@ class UserRepository extends Repository implements IUserRepository
      */
     public function signout(): void {
         $_SESSION = [];
-        session_destroy();
-        Redirect::to('signin');
+
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_destroy();
+        }
+
+        if (!headers_sent()) {
+            Redirect::to('signin');
+        }
     }
 }

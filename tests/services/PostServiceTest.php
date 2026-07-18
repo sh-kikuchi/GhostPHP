@@ -1,271 +1,220 @@
-<!-- vendor/bin/phpunit tests\services\PostServiceTest.php  -->
 <?php
+// vendor/bin/phpunit --display-warnings tests/services/PostServiceTest.php
 
 use PHPUnit\Framework\TestCase;
-use app\aura\Service;
-use app\aura\Template;
-use app\aura\utils\Session;
-use app\requests\PostRequest;
 use app\services\PostService;
-use app\entities\PostEntity;
-use app\repositories\UserRepository;
+use app\aura\Logger;
+use app\aura\utils\Session;
 use app\repositories\PostRepository;
+use app\repositories\UserRepository;
+use app\requests\PostRequest;
 
 require 'bootstrap.php';
 
 /**
- * Test case for the PostService class
- *
- * This class contains test methods for verifying the functionality of the PostService class.
- * It uses PHPUnit framework to create mock objects and test various methods of the PostService class.
+ * Test cases for PostService.
  */
-class PostServiceTest extends TestCase
-{
+class PostServiceTest extends TestCase {
+    private PostService $service;
+    private PostRepository $postRepository;
+    private UserRepository $userRepository;
+    private Logger $logger;
+    private Session $session;
+
     /**
-     * Test the index method of the PostService class.
-     *
-     * This test verifies that the index method correctly handles session errors,
-     * interacts with the UserRepository and PostRepository, and initializes the Template correctly.
+     * Set up test dependencies.
      *
      * @return void
      */
-    public function testIndex() 
-    {
-        $_SESSION['errors'] = ['Error message 1', 'Error message 2'];
+    protected function setUp(): void {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
 
-        // Create a mock of UserRepository
-        $mock = $this->getMockBuilder(UserRepository::class)->getMock();
-        $mock->method('checkSign')->willReturn(true);
-        $result = $mock->checkSign();
-        $this->assertEquals(true, $result);
+        $_SESSION = [];
+        $_POST = [];
 
-        // Create a mock of PostRepository
-        $mock_post_repository = $this->getMockBuilder(PostRepository::class)->getMock();
-        $mockPostData = [
+        $this->logger = $this->createMock(Logger::class);
+        $this->postRepository = $this->createMock(PostRepository::class);
+        $this->userRepository = $this->createMock(UserRepository::class);
+        $this->session = $this->createMock(Session::class);
+
+        $this->service = new PostService(
+            $this->logger,
+            $this->postRepository,
+            $this->userRepository,
+            $this->session
+        );
+    }
+
+    /**
+     * Test retrieving the post list.
+     *
+     * @return void
+     */
+    public function testIndex(): void {
+        $posts = [
             [
-                'id' => 1, 
-                'title' => 'Post 1',
-                'body' => '世田谷給田', 
-                'created_at' => '2024-05-02 21:01:11', 
-                'updated_at' => '2024-05-02 21:01:11' 
-            ],
+                'id' => 1,
+                'title' => 'Post1',
+                'body' => 'Body'
+            ]
         ];
-        $mock_post_repository->method('show')->willReturn($mockPostData);
 
-        $postShowData = $mock_post_repository->show();
-        $this->assertEquals($mockPostData, $postShowData);
+        $this->userRepository
+            ->expects($this->once())
+            ->method('checkSign')
+            ->willReturn(true);
 
-        // Create a Template instance
-        $template = new Template(
-            'post/index', [
-                'csrf'     => 'test',
-                'posts'    => $postShowData,
-                'max_page' => 3,
-                'errors'   => isset($_SESSION['errors']) ? $_SESSION['errors'] : null
-            ]
-        );
+        $this->postRepository
+            ->expects($this->once())
+            ->method('show')
+            ->willReturn($posts);
 
-        unset($_SESSION['errors']);
+        $result = $this->service->index();
 
-        $this->assertArrayNotHasKey('errors', $_SESSION);
-        $this->assertNotNull($template);
+        $this->assertEquals($posts, $result);
     }
 
     /**
-     * Test the createForm method of the PostService class.
-     *
-     * This test verifies that the createForm method initializes the Template correctly
-     * with the expected data.
+     * Test creating a PostEntity from a request.
      *
      * @return void
      */
-    public function testCreateForm() 
-    {
-        $mock = $this->getMockBuilder(UserRepository::class)->getMock();
-        $mock->method('checkSign')->willReturn(true);
+    public function testMakePost(): void {
+        $request = new PostRequest();
 
-        // Create a Template instance
-        $template = new Template(
-            'post/create_form', [
-                'csrf'        => 'test',
-                'signin_user' => 'katuobushi nekotaro',
-                'errors'      => null,
-                'old'         => null
-            ]
-        );
+        $request->fill([
+            'user_id' => 1,
+            'title' => 'Test Title',
+            'body' => 'Test Body'
+        ]);
 
-        $this->assertNotNull($template);
+        $entity = $this->service->makePost($request);
+
+        $this->assertEquals(1, $entity->getUserId());
+        $this->assertEquals('Test Title', $entity->getTitle());
+        $this->assertEquals('Test Body', $entity->getBody());
     }
 
     /**
-     * Test the updateForm method of the PostService class.
-     *
-     * This test verifies that the updateForm method correctly retrieves post data
-     * and initializes the Template with the expected data.
+     * Test successful post creation.
      *
      * @return void
      */
-    public function testUpdateForm() 
-    {
-        $param = 3;
+    public function testCreateSuccess(): void {
+        $request = new PostRequest();
 
-        $mock = $this->getMockBuilder(UserRepository::class)->getMock();
-        $mock->method('checkSign')->willReturn(true);
+        $request->fill([
+            'user_id' => 1,
+            'title' => 'Test Title',
+            'body' => 'Test Body'
+        ]);
 
-        $mock_post_repository = $this->getMockBuilder(PostRepository::class)->getMock();
-        $mockPostData = [
+        $this->postRepository
+            ->expects($this->once())
+            ->method('createPost')
+            ->willReturn(true);
+
+        $this->assertTrue(
+            $this->service->create($request)
+        );
+    }
+
+    /**
+     * Test failed post creation.
+     *
+     * @return void
+     */
+    public function testCreateFailure(): void {
+        $request = new PostRequest();
+
+        $request->fill([
+            'user_id' => 1,
+            'title' => 'Test Title',
+            'body' => 'Test Body'
+        ]);
+
+        $this->postRepository
+            ->expects($this->once())
+            ->method('createPost')
+            ->willReturn(false);
+
+        $this->assertFalse(
+            $this->service->create($request)
+        );
+    }
+
+    /**
+     * Test successful post update.
+     *
+     * @return void
+     */
+    public function testUpdateSuccess(): void {
+        $_SESSION['csrf_token']['post_update'] = 'token';
+        $_POST['csrf_token'] = 'token';
+
+        $request = new PostRequest();
+
+        $request->fill([
             'id' => 1,
-            'title' => 'Post 1',
-            'body' => 'Test Body',
-            'created_at' => '2024-05-02 21:01:11',
-            'updated_at' => '2024-05-02 21:01:11'
-        ];
-    
-        $mock_post_repository->method('getPost')->willReturn($mockPostData);
+            'user_id' => 1,
+            'title' => 'Updated',
+            'body' => 'Body',
+            'csrf_token' => 'token'
+        ]);
 
-        $postUpdateForm = $mock_post_repository->getPost($param);
-        $this->assertEquals($mockPostData, $postUpdateForm);
+        $this->postRepository
+            ->expects($this->once())
+            ->method('updatePost')
+            ->willReturn(true);
 
-        // Create a Template instance
-        $template = new Template(
-            'post/update_form', [
-                'csrf'        => 'test',
-                'posts'       =>  $postUpdateForm,
-                'signin_user' =>  null,
-                'errors'      =>  null,
-            ]
+        $this->assertTrue(
+            $this->service->update($request)
         );
-
-        $this->assertNotNull($template);
     }
 
     /**
-     * Test the makePost method of the PostService class.
-     *
-     * This test verifies that the makePost method correctly creates a PostEntity
-     * instance from POST data.
+     * Test successful post deletion.
      *
      * @return void
      */
-    public function testMakePost() 
-    {
-        $post_service = new PostService();
-        $post_entity  = new PostEntity();
+    public function testDeleteSuccess(): void {
+        $_SESSION['csrf_token']['post_delete'] = 'token';
+        $_POST['csrf_token'] = 'token';
 
-        $_POST = [
-            'user_id' => '1',
-            'title' => 'Test Title',
-            'body' => 'Test Body',
-            'csrf_token' => 'valid_token'
-        ];
+        $this->postRepository
+            ->expects($this->once())
+            ->method('deletePost')
+            ->with(1)
+            ->willReturn(true);
 
-        $post_entity->setUserId($_POST['user_id']);
-        $post_entity->setTitle($_POST['title']);
-        $post_entity->setBody($_POST['body']);
-
-        $post_data =  $post_service->makePost($_POST);
-
-        $this->assertEquals($post_entity, $post_data);
+        $this->assertTrue(
+            $this->service->delete(1)
+        );
     }
 
     /**
-     * Test the create method of the PostService class.
-     *
-     * This test verifies that the create method checks the CSRF token and calls
-     * the PostRepository create method correctly.
+     * Test retrieving a post by ID.
      *
      * @return void
      */
-    public function testCreate() 
-    {
-        $post_service = new PostService();
-
-        $mock_post_repository = $this->getMockBuilder(PostRepository::class)->getMock();
-        $mock_post_repository->method('createPost')->willReturn(true);
-
-        $_SESSION['csrf_token']['post_create'] = 'valid_token';
-
-        $_POST = [
-            'user_id' => 1,
-            'title' => 'Test Title',
-            'body' => 'Test Body',
-            'csrf_token' => 'valid_token'
+    public function testGetPost(): void {
+        $post = [
+            'id' => 1,
+            'title' => 'Post1',
+            'body' => 'Body'
         ];
-           
-        $token_check = $post_service->checkToken('post_create');
-        $post_data =  $post_service->makePost($_POST);
 
-        $result = $mock_post_repository->createPost($post_data);
+        $this->postRepository
+            ->expects($this->once())
+            ->method('getPost')
+            ->with(1)
+            ->willReturn($post);
 
-        $this->assertTrue($token_check);
-        $this->assertTrue($result);
-    }
-
-    /**
-     * Test the update method of the PostService class.
-     *
-     * This test verifies that the update method checks the CSRF token and calls
-     * the PostRepository update method correctly.
-     *
-     * @return void
-     */
-    public function testUpdate() 
-    {
-        $post_service = new PostService();
-
-        $mock_post_repository = $this->getMockBuilder(PostRepository::class)->getMock();
-        $mock_post_repository->method('updatePost')->willReturn(true);
-
-        $_SESSION['csrf_token']['post_update'] = 'valid_token';
-
-        $_POST = [
-            'id'      => 100,
-            'user_id' => '1',
-            'title' => 'Test Title',
-            'body' => 'Test Body',
-            'csrf_token' => 'valid_token'
-        ];
-           
-        $token_check = $post_service->checkToken('post_update');
-        $post_data =  $post_service->makePost($_POST);
-
-        $result = $mock_post_repository->updatePost($post_data);
-
-        $this->assertTrue($token_check);
-        $this->assertTrue($result);
-    }
-
-    /**
-     * Test the delete method of the PostService class.
-     *
-     * This test verifies that the delete method checks the CSRF token and calls
-     * the PostRepository delete method correctly.
-     *
-     * @return void
-     */
-    public function testDelete() 
-    {
-        $post_service = new PostService();
-
-        $mock_post_repository = $this->getMockBuilder(PostRepository::class)->getMock();
-        $mock_post_repository->method('deletePost')->willReturn(true);
-
-        $_SESSION['csrf_token']['post_delete'] = 'valid_token';
-
-        $_POST = [
-            'id'      => 1,
-            'user_id' => 1,
-            'title' => 'Test Title',
-            'body' => 'Test Body',
-            'csrf_token' => 'valid_token'
-        ];
-           
-        $token_check = $post_service->checkToken('post_delete');
-        $post_data =  $post_service->makePost($_POST);
-
-        $result = $mock_post_repository->deletePost($post_data);
-
-        $this->assertTrue($token_check);
-        $this->assertTrue($result);
+        $this->assertEquals(
+            $post,
+            $this->service->getPost(1)
+        );
     }
 }

@@ -19,32 +19,52 @@ class Migrate {
      * @return void
      * @throws PDOException If there is an error executing the SQL statements.
      */
-    function run() {
-        // Connect to the database
+    public function run() {
         require_once 'aura/database/DataBaseConnect.php';
         $dbConnect = new app\aura\database\DataBaseConnect();
-        $pdo = $dbConnect->getPDO(); // Get the PDO instance
+        $pdo = $dbConnect->getPDO();
 
-        // Scan files in the directory
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
         $files = scandir($this->directory);
+        sort($files, SORT_STRING);
 
-        // Run migrations
         foreach ($files as $file) {
             if ($file == '.' || $file == '..') continue;
-            require_once $this->directory . '/' . $file;
-            
-            try {
-                // Extract the class name from the file name
-                $table_class = explode(".", $file)[1];
-                $table_instance = new $table_class();
-                $sql = $table_instance->getSql();
-                $pdo->query($sql);
 
-            } catch (PDOException $e) {
-                print($e->getMessage());
+            require_once $this->directory . '/' . $file;
+
+            $table_class = explode(".", $file)[1];
+
+            echo "== Running: {$file} ==\n";
+
+            $table_instance = new $table_class();
+            $sql = $table_instance->getSql();
+
+            $queries = is_array($sql) ? $sql : [$sql];
+
+            foreach ($queries as $q) {
+                try {
+                    echo "SQL: {$q}\n";
+                    $pdo->exec($q);
+                } catch (PDOException $e) {
+
+                    if (str_contains($e->getMessage(), 'Duplicate key name')) {
+                        echo "[SKIP] Index already exists\n";
+                        continue;
+                    }
+
+                    echo "[FAILED] {$file}\n";
+                    echo "Message: " . $e->getMessage() . "\n";
+                    echo "SQL: {$q}\n";
+                    echo "Trace:\n" . $e->getTraceAsString() . "\n";
+
+                    exit(1);
+                }
             }
+
+            echo "[OK] {$file}\n\n";
         }
     }
-}
-
+};
 ?>

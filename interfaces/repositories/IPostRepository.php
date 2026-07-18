@@ -16,5 +16,5 @@ interface IPostRepository {
     public function getPost(int $id): ?array;
     public function createPost(Post $post): bool;
     public function updatePost(Post $post): bool;
-    public function deletePost(Post $post): bool;
+    public function deletePost(int $id): bool;
 }

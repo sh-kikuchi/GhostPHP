@@ -33,9 +33,7 @@ $dotenv->load();
 
 // Register directories for autoloading
 $autoloader->registerDir(__DIR__ . '/aura/utils/functions');
-$autoloader->registerDir(__DIR__ . '/interfaces/requests');
 $autoloader->registerDir(__DIR__ . '/interfaces/repositories');
-$autoloader->registerDir(__DIR__ . '/interfaces/services');
 $autoloader->registerDir(__DIR__ . '/config');
 
 // Activate autoloader

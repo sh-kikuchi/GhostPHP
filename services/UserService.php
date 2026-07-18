@@ -3,239 +3,123 @@
 namespace app\services;
 
 use app\aura\Service;
-use app\aura\Template;
-use app\aura\https\Redirect;
-use app\aura\utils\Session;
 use app\aura\utils\File;
 use app\aura\utils\Mail;
+use app\aura\utils\Session;
 use app\entities\UserEntity as User;
 use app\repositories\UserRepository;
 use app\requests\UserRequest;
+use app\requests\FileRequest;
 
 /**
  * Class UserService
- * 
- * Handles business logic related to user management, including sign-up,
- * sign-in, and user profile management.
+ *
+ * Handles user-related business logic.
  *
  * @package app\services
  */
-class UserService extends Service implements IUserService {
-
+class UserService extends Service {
     /**
      * UserService constructor.
+     *
+     * @param UserRepository $user_repository
+     * @param File $file
+     * @param Mail $mail
+     * @param Session $session
      */
-    public function __construct() {
+    public function __construct(
+        private UserRepository $user_repository,
+        private File $file,
+        private Mail $mail,
+        private Session $session
+    ) {
         parent::__construct();
-        $session = new Session;
     }
 
     /**
-     * Display the user's personal page.
-     *
-     * @return string The rendered template.
-     */
-    public function myPage() {
-        $user_repository = new UserRepository();
-        $result = $user_repository->checkSign();
-        if (!$result) {
-            $_SESSION['signin_err'] = 'Please sign in.';
-            Redirect::to('signin');
-            return;
-        }
-        
-        // Rendering
-        $template = new Template(
-            'user/index', [
-                'signin_user' => $_SESSION['signin_user']
-            ]
-        );
-        return $template->render();
-    }
-
-    /**
-     * Show the sign-up form.
-     *
-     * @return string The rendered template.
-     */
-    public function showSignUpForm() {
-        $user_repository = new UserRepository();
-        $result = $user_repository->checkSign();
-        if ($result) {
-            Redirect::to('index');
-            exit();
-        }
-
-        // Rendering
-        $template = new Template(
-            'user/form', [
-                'csrf' => $this->setToken('signup'),
-                'errors' => $_SESSION['errors'] ?? null,
-                'old' => $_SESSION['old'] ?? null,
-                'form_name' => 'signup'
-            ]
-        );
-
-        unset($_SESSION['errors'], $_SESSION['old']);
-
-        return $template->render();
-    }
-
-    /**
-     * Handle the sign-up process.
+     * Check whether a user is signed in.
      *
      * @return bool
      */
-    public function signup() {
-        // Check token
-        if (!$this->checkToken('signup')) {
-            echo 'Invalid token.';
-            return false;
-        }
+    public function checkSign(): bool {
+        return $this->user_repository->checkSign();
+    }
 
-        // Start transaction
+    /**
+     * Register a new user.
+     *
+     * @param UserRequest $user_request
+     * @return bool
+     */
+    public function signup(UserRequest $user_request): bool {
         $this->beginTransaction();
 
         try {
-            // Create an instance
-            $user = new UserRepository();
-            $user_request = $this->makeUser($_POST, 'signup');
+            $user = $this->makeUser($user_request);
 
-            // Execute methods
-            $result = $user->signup($user_request);
-
-            if (!$result) {
-                throw new \Exception('Post creation failed.');
+            if (!$this->user_repository->signup($user)) {
+                throw new \Exception('Signup failed.');
             }
 
-            // Commit transaction
             $this->commit();
-
-            // Redirect
-            Redirect::to('index');
+            return true;
 
         } catch (\Exception $e) {
             $this->rollBack();
-            Redirect::error(500);  
-        }
-    }
-
-    /**
-     * Show the sign-in form.
-     *
-     * @return string The rendered template.
-     */
-    public function showSignInForm() {
-        $user_repository = new UserRepository();
-        $result = $user_repository->checkSign();
-        if ($result) {
-            Redirect::to('index');
-            return;
-        }
-
-        // Rendering
-        $template = new Template(
-            'user/form', [
-                'csrf' => $this->setToken('signin'),
-                'errors' => $_SESSION['errors'] ?? null,
-                'old' => $_SESSION['old'] ?? null,
-                'form_name' => 'signin'
-            ]
-        );
-
-        unset($_SESSION['errors'], $_SESSION['old']);
-
-        return $template->render();
-    }
-
-    /**
-     * Handle the sign-in process.
-     *
-     * @return bool
-     */
-    public function signin() {
-        // Check token
-        if (!$this->checkToken('signin')) {
-            echo 'Invalid token.';
             return false;
         }
-
-        // Create an instance
-        $user = new UserRepository();
-        $user_request = $this->makeUser($_POST, 'signin');
-
-        // Execute methods
-        $result = $user->signin($user_request);
-
-        // Transitioning screen
-        if (!$result) {
-            Redirect::to('signin');
-        } else {
-            Redirect::to('index');
-        }
     }
 
     /**
-     * Handle the sign-out process.
+     * Authenticate a user.
+     *
+     * @param UserRequest $user_request
+     * @return bool
      */
-    public function signout() {
-        // Create an instance
-        $user = new UserRepository();
+    public function signin(UserRequest $user_request): bool {
+        $user = $this->makeUser($user_request);
 
-        // Execute methods
-        $user->signout();
+        return $this->user_repository->signin($user);
     }
 
     /**
-     * Handle sending mail.
-     */
-    public function mail() {
-        $mail = new Mail();
-        $mail->sendMail($_POST);
-    }
-
-    /**
-     * Handle file upload.
+     * Sign out the current user.
      *
      * @return void
      */
-    public function upload() {
-        // Create an instance
-        $file = new File();
-        $result = $file->uploadFile($_FILES);
-
-        // Transitioning screen
-        Redirect::to('index');
-        exit();
+    public function signout(): void {
+        $this->user_repository->signout();
     }
 
     /**
-     * Create a User entity from the form data.
+     * Upload a file.
      *
-     * @param array $user_form The form data.
-     * @param string $type The type of request (signup or signin).
-     * @return User The User entity.
+     * @param FileRequest $file_request
+     * @return void
      */
-    public function makeUser(array $user_form, string $type):User {
+    public function upload(FileRequest $file_request): void {
+        $this->file->uploadFile(
+            $file_request->files()
+        );
+    }
+
+    public function mail(array $data): void  {
+        $this->mail->sendMail($data);
+    }
+
+    private function makeUser(UserRequest $user_request): User {
         $user = new User();
-        $user_request = new UserRequest($user_form);
 
-        // Validate based on the request type
-        switch ($type) {
-            case 'signup':
-                $user_request->signUpValidation();
-                break;
-            case 'signin':
-                $user_request->signInValidation();
-                break;
+        if (!empty($user_request->input('id'))) {
+            $user->setId($user_request->input('id'));
         }
 
-        if ($user_request->getId() !== null) {
-            $user->setId($user_request->getId());
+        if (!empty($user_request->input('name'))) {
+            $user->setName($user_request->input('name'));
         }
-        $user->setName($user_request->getName());
-        $user->setEmail($user_request->getEmail());
-        $user->setPassword($user_request->getPassword());
+
+        $user->setEmail($user_request->input('email'));
+        $user->setPassword($user_request->input('password'));
 
         return $user;
     }

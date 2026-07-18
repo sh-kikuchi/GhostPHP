@@ -2,8 +2,7 @@
 namespace app\aura;
 
 use app\aura\https\Redirect;
-use app\aura\https\Request;
-use app\aura\https\Response;
+use app\aura\https\HttpRequest;
 use app\aura\utils\Validator;
 
 /**
@@ -14,11 +13,8 @@ use app\aura\utils\Validator;
  */
 abstract class Controller {
 
-    /** @var Request */
-    protected Request $request;
-
-    /** @var Response */
-    protected Response $response;
+    /** @var HttpRequest */
+    protected HttpRequest $request;
 
     /** @var Redirect */
     protected Redirect $redirect;
@@ -32,10 +28,36 @@ abstract class Controller {
      * Initializes the request, response, redirect, and validator instances.
      */
     public function __construct() {
-        $this->request   = new Request();
-        $this->response  = new Response();
+        $this->request   = new HttpRequest();
         $this->redirect  = new Redirect();
         $this->validator = new Validator();
+    }
+
+    /**
+     * Generate a CSRF token for a specified form.
+     *
+     * @param string $form_name The name of the form for which the token is being generated.
+     * @return string The generated CSRF token.
+     */
+    public function setToken(string $form_name): string {
+        $csrf_token = bin2hex(random_bytes(32));
+        $_SESSION['csrf_token'][$form_name] = $csrf_token;
+
+        return $csrf_token;
+    }
+
+    /**
+     * Check if the provided CSRF token is valid for a specified form.
+     *
+     * @param string $form_name The name of the form to check the token against.
+     * @return bool True if the token is valid, false otherwise.
+     */
+    public function checkToken(string $form_name): bool {
+        if (!isset($_SESSION['csrf_token'][$form_name])) {
+            return false;
+        }
+
+        return $_POST["csrf_token"] === $_SESSION['csrf_token'][$form_name];
     }
 
     /**

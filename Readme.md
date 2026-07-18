@@ -7,60 +7,63 @@
 
 ## 2. Architecture（アーキテクチャ）
 
-```
-[ Client ]
-     │
-     ▼
-[ Router (aura/routes) ]
-     │
-     ▼
-[ Request (requests) ]
-     │   └─ Validation / Data shaping
-     ▼
-[ Service (services) ]   ← ★ Core（ユースケース）
-     │   └─ Business Logic
-     │
-     │   (fetch / persist via Repository)
-     ▼
-   ( domain data )
-     │
-     ▼
-[ Response ]
-     │   └─ Transform data into response
-     │
-     ├─ JSON Response (API)
-     └─ Template (HTML)
-     │
-     ▼
-[ Client ]
+```mermaid
+sequenceDiagram
+    actor Client
+    participant index.php
+    participant Controller
+    participant Service
+    participant Repository
+    participant Database
 
-----------------------------------------
-
-[ Repository (models/repositories) ]
-     │
-     │   ┌────────────────────────────┐
-     │   │   uses Entity              │
-     │   │   - hydrate (DB → Entity)  │
-     │   │   - persist (Entity → DB)  │
-     │   └────────────────────────────┘
-     ▼
-[ Database (aura/database) ]
+    Client->>index.php: HTTP Request
+    index.php->>Controller: Route
+    Controller->>Service: Execute
+    Service->>Repository: CRUD
+    Repository->>Database: Query
+    Database-->>Repository: Result
+    Repository-->>Service: Entity
+    Service-->>Controller: Result
+    Controller-->>Client: HTML / JSON
 ```
 
 ### ■ Layer Responsibilities
-- Request
+- index.php
+  - アプリケーションのエントリーポイント。
+  - bootstrap.php を読み込み、アプリケーションを初期化する。
+  - ルーティングを定義し、HTTPリクエストを処理する。
+  - The application's entry point. Loads `bootstrap.php`, initializes the application, defines routes, and dispatches incoming HTTP requests.
+  - 
+- Router
+  - HTTPリクエストを対応する Controller に振り分ける。
+  - Routes incoming HTTP requests to controllers.
+
+- Controller
+  - HTTPリクエストを受け取り、Service を呼び出す。
+  - 必要に応じて Response を返す。
+  - ビジネスロジックは持たず、各レイヤーの橋渡しを担当する。
+  - Receives HTTP requests, delegates processing to services, and returns the appropriate response while remaining free of business logic.
+
+- HttpRequest
   - 入力データの検証・整形
+  - Validation / Data shaping
+
 - Service
   - ユースケース単位のビジネスロジック
   - Repository を通じてデータを取得・保存
+  - Implements business logic and coordinates data access through repositories.
+
 - Response
-  - Serviceの返したデータを最終形式（JSON / HTML）に変換
+  - Service の返したデータを最終形式（JSON / HTML）に変換
+  - Transforms service results into JSON or HTML responses.
+
 - Repository
   - データアクセス（CRUD）をカプセル化
   - Entity を用いてDBとデータをやり取りする
+  - Encapsulates data access and persists entities.
+
 - Entity
   - データベースとやり取りするデータ構造
-
 
 ### ■ Thin Framework Philosophy
 
@@ -86,19 +89,16 @@ Ghost PHP は Thin Framework を志向しています。
 │      ├─commands    // CLIコマンド処理
 │      └─functions   // 主にView用関数
 ├─config             // 設定ファイル
-├─requests       // フォームデータ管理クラス
+├─controllers        // コントローラークラス
+├─requests           // フォームデータ管理クラス
 ├─interfaces         // 各種インターフェース
-│  ├─requests
-│  ├─models
-│  └─services
 ├─logs               // ログ
 ├─migrations         // マイグレーション
 │  ├─csv
 │  ├─migrate
 │  └─seed
-├─models             // モデル層
-│  ├─entities
-│  └─repositories
+├─entities
+├─repositories
 ├─public             // 公開用アセット
 │  └─assets
 │      ├─css

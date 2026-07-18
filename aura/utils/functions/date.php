@@ -1,36 +1,43 @@
 <?php
+
 /******************************
  * timestamp
  ******************************/
+
 /**
- * Convert timestamps to Y-m-d format.
+ * Convert a timestamp to Y-m-d format.
  *
- * @param timestamp $ts
- * @return string Y-m-d
+ * @param int $ts Unix timestamp.
+ * @return string Formatted date (Y-m-d).
  */
-function toDateYmd($ts) {
+function toDateYmd(int $ts): string {
     return date('Y-m-d', $ts);
 }
+
 /**
- * Convert timestamps to Y-m-d H: i format.
+ * Convert a timestamp to Y-m-d H:i format.
  *
- * @param timestamp $ts
- * @return string Y-m-d H:i
+ * @param int $ts Unix timestamp.
+ * @return string Formatted date (Y-m-d H:i).
  */
-function toDateYmdHi($ts) {
+function toDateYmdHi(int $ts): string {
     return date('Y-m-d H:i', $ts);
 }
+
 /**
- * Receive date and time in string and convert TimeStamp
+ * Convert a date and time string to a Unix timestamp.
  *
- * @param string $ymd Y-m-d
- * @param string $hi H:i
- * @return timestamp
+ * @param string $ymd Date in Y-m-d format.
+ * @param string $hi Time in H:i format.
+ * @return int Unix timestamp.
  */
-function toTimeStamp($ymd="", $hi="")
-{
-    if (empty($ymd) || empty($hi)) trigger_error("empty ymd or hi!", E_USER_ERROR);
-    $ymd = explode("-", $ymd);
-    $hi = explode(":", $hi);
+function toTimeStamp(string $ymd = "", string $hi = ""): int {
+    if (empty($ymd) || empty($hi)) {
+        trigger_error('empty ymd or hi!', E_USER_ERROR);
+    }
+
+    $ymd = explode('-', $ymd);
+    $hi = explode(':', $hi);
+
     return mktime($hi[0], $hi[1], 0, $ymd[1], $ymd[2], $ymd[0]);
 }

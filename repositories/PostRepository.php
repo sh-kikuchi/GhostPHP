@@ -2,9 +2,10 @@
 
 namespace app\repositories;
 
-use app\aura\Repository;  // ★ 追加
+use PDO;
+use app\aura\Repository;
 use app\entities\PostEntity as Post;
-use app\aura\database\DataBaseConnect;
+
 require_once 'interfaces/repositories/IPostRepository.php';
 
 class PostRepository extends Repository implements IPostRepository
@@ -13,8 +14,8 @@ class PostRepository extends Repository implements IPostRepository
      * PostRepository constructor.
      * Initializes the repository for the 'users' table.
      */
-    public function __construct() {
-        parent::__construct('posts');
+    public function __construct(?PDO $pdo = null) {
+        parent::__construct('posts', $pdo);
     }
 
     /**
@@ -23,7 +24,7 @@ class PostRepository extends Repository implements IPostRepository
      * @return array An array of posts.
      */
     public function show(): array {
-        return parent::findAll(); // ★ 親クラスの findAll() を使うだけ
+        return parent::findAll();
     }
 
     /**
@@ -51,15 +52,13 @@ class PostRepository extends Repository implements IPostRepository
         return parent::create($data);
     }
 
-    
     /**
      * Updates an existing post in the database.
      *
      * @param Post $post The post entity with updated data.
      * @return bool True on success, false on failure.
      */
-    public function updatePost(Post $post): bool
-    {
+    public function updatePost(Post $post): bool {
         $data = [
             'title' => $post->getTitle(),
             'body' => $post->getBody(),
@@ -70,11 +69,10 @@ class PostRepository extends Repository implements IPostRepository
     /**
      * Deletes a post from the database.
      *
-     * @param Post $post The post entity to delete.
+     * @param int $id The post entity to delete.
      * @return bool True on success, false on failure.
      */
-    public function deletePost(Post $post): bool
-    {
-        return parent::delete($post->getId());
+    public function deletePost(int $id): bool {
+        return parent::delete($id);
     }
 }
