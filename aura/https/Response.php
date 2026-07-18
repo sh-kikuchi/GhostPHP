@@ -43,7 +43,7 @@ class Response {
      *
      * @param mixed $content The content to be sent in the response.
      * @param string $contentType The MIME type of the content (default is 'text/html').
-     * @return void
+     * @return static
      */
     public function setContent($content, $contentType = 'text/html') {
         $this->content = $content;
@@ -56,7 +56,7 @@ class Response {
      *
      * @param int $status_code The HTTP status code to set.
      * @param string $status_text The optional status text to set (default is an empty string).
-     * @return void
+     * @return static
      */
     public function status($status_code, $status_text = '') {
         $this->status_code = $status_code;
@@ -69,9 +69,9 @@ class Response {
      *
      * @param string $header The header name.
      * @param string $val The header value.
-     * @return void
+     * @return static
      */
-    public function header($header, $val) {
+    public function header(string $header, string $val) {
         $this->http_headers[$header] = $val;
         return $this;
     }
@@ -83,7 +83,7 @@ class Response {
      * It also automatically sets the "Content-Type" header to "application/json".
      *
      * @param mixed $data The data to be JSON-encoded and sent in the response body.
-     * @return self Returns the current Response instance for method chaining.
+     * @return static
      */
     public function json($data) {
         $this->content = json_encode($data, JSON_THROW_ON_ERROR);

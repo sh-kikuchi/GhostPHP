@@ -1,7 +1,7 @@
 <?php
 namespace app\aura\utils;
 
-class Session{
+class Session {
     protected static $sessionStarted = false;
     protected static $sessionIdRegenerated = false;
 
@@ -20,9 +20,11 @@ class Session{
           $this->clear();
         }
     }
+
     public function clear(){
-      $_SESSION = array();
+      $_SESSION = [];
     }
+
     /**
      * Check Session Status.
      */
@@ -31,31 +33,33 @@ class Session{
         session_start();
       }
     }
+
     /**
      * Regenerates the session ID.
      */
     public function regenerateId() {
       session_regenerate_id(true);
     }
+
     /**
      * When returning to the screen on a validation error, 
      * the value that was entered is also returned.
      * @param array $oldPostValue 
      * @return void
      */
-    function oldPostValue($oldPostValue){
+    public function oldPostValue(array $oldPostValue){
       foreach($oldPostValue as $key => $value){
           $_SESSION['old'][$key] = $value;
       }
     }
 
-    
-    function setToken() :string {
+    public function setToken() :string {
       $csrf_token = bin2hex(random_bytes(32));
       $_SESSION['csrf_token'] = $csrf_token;
   
       return $csrf_token;
     }
+
     /**
      * Sets the session expiration time.
      */
@@ -68,6 +72,7 @@ class Session{
       //  Sets the session expiration time(ex. 1Hour)
       $_SESSION['expiry_time'] = time() + 3600;
     }
+
     /**
      * Checks if the session has expired.
      *
@@ -86,10 +91,10 @@ class Session{
         //True if the session has expired, false otherwise.
         return $expiryTime !== 0 && $currentTime > $expiryTime;
     }
+
     /**
      * When returning to the screen on a validation error, 
      * the value that was entered is also returned.
-     * @param  void 
      * @return void
      */
     private function regenerateSessionId(){

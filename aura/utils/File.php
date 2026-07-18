@@ -2,11 +2,7 @@
 
 namespace app\aura\utils;
 
-use app\config\Message;
-use app\aura\https\Redirect;
-
-class File
-{
+class File {
     /**
      * Handles file upload processing.
      *
@@ -19,13 +15,10 @@ class File
      * @param array $file_data The $_FILES array.
      * @return array Upload result data.
      */
-    public function uploadFile(array $file_data): array
-    {
+    public function uploadFile(array $file_data): array {
         $results = [];
-
         foreach ($file_data as $inputName => $data) {
-
-            if (is_array($data['name'])) {
+            if (\is_array($data['name'])) {
                 foreach ($data['name'] as $i => $name) {
                     $results[] = $this->processFile([
                         'name'     => $data['name'][$i],
@@ -37,20 +30,28 @@ class File
                 $results[] = $this->processFile($data);
             }
         }
-
         return $results;
     }
 
-    private function processFile(array $file): array
-    {
+    /**
+     * Processes a single uploaded file.
+     *
+     * Validates the upload, checks the file extension,
+     * saves the file to the storage directory,
+     * and returns the upload result.
+     *
+     * @param array $file Uploaded file information.
+     * @return array Upload result containing success status and file path or error message.
+     */
+    private function processFile(array $file): array {
         if ($file['error'] !== UPLOAD_ERR_OK) {
             return ['success' => false, 'message' => 'Upload error'];
         }
 
         $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        $allowed_extensions = ['gif', 'jpg', 'jpeg', 'png'];
+        $allowed_extensions = explode(',', $_ENV['ALLOWED_EXTENSIONS']);
 
-        if (!in_array($extension, $allowed_extensions)) {
+        if (!\in_array($extension, $allowed_extensions)) {
             return ['success' => false, 'message' => 'Invalid file type'];
         }
 
@@ -63,4 +64,3 @@ class File
         return ['success' => true, 'path' => $dest];
     }
 }
-?>

@@ -29,9 +29,9 @@ class Repository {
      * 
      * @param string $table The name of the table (optional).
      */
-    public function __construct(string $table = '') {
+    public function __construct(string $table = '', ?PDO $pdo = null){
         // PDOをDataBaseConnectから取得
-        $this->pdo = (new DataBaseConnect())->getPDO();
+          $this->pdo = $pdo ?? (new DataBaseConnect())->getPDO();
         
         if (!empty($table)) {
             $this->setTable($table);

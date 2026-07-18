@@ -16,7 +16,7 @@
  * foreach ($result['data'] as $user) { ... }
  * echo "Page 1 of " . $result['max_page'];
  */
-function paginate($data, $showPerPage){
+function paginate(array $data, int $showPerPage){
     $return_data = [];
 
     define('MAX', $showPerPage);                           // show data per page  
@@ -31,5 +31,3 @@ function paginate($data, $showPerPage){
 
     return $return_data;
 }
-
-?>

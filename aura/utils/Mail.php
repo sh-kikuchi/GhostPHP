@@ -2,7 +2,7 @@
 
 namespace app\aura\utils;
 
-// Import PHPMailer classes / PHPMailerクラスの読み込み
+// Import PHPMailer classes
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -14,7 +14,7 @@ class Mail {
      * @param array $post_data Form data
      * @return bool $result Sending result
      */
-    public function sendMail($post_data) {
+    public function sendMail(array $post_data) {
 
         // Default result = false
         $result = false;
@@ -41,9 +41,8 @@ class Mail {
             $mail = new PHPMailer(true);
 
             // =========================
-            // SMTP Configuration / SMTP設定
+            // SMTP Configuration
             // =========================
-
             $mail->isSMTP(); // Use SMTP
 
             $mail->Host = $_ENV['SMTP_HOST']; // SMTP server
@@ -55,13 +54,12 @@ class Mail {
             // Disable encryption for local testing
             $mail->SMTPSecure = $_ENV['SMTP_SECURE'];
 
-            // Charset / 文字コード
+            // Charset
             $mail->CharSet = 'UTF-8';
 
             // =========================
             // Sender & Recipient
             // =========================
-
             // Sender (must be your domain in production)
             $mail->setFrom($_ENV['MAIL_FROM'], 'GhostPHP');
 
@@ -76,8 +74,7 @@ class Mail {
             // =========================
             // Mail Content
             // =========================
-
-            // Subject / 件名
+            // Subject
             $mail->Subject = 'Letter from ' . $username;
 
             // Body (plain text)

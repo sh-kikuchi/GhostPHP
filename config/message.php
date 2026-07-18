@@ -26,4 +26,3 @@ class Message {
         'FAILED'      => 'Upload failed.'
     ];  
 }
-?>

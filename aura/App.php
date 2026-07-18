@@ -2,7 +2,7 @@
 
 namespace app\aura;
 
-use app\aura\https\Request;
+use app\aura\https\HttpRequest;
 use app\aura\routes\Router;
 
 /**
@@ -10,19 +10,18 @@ use app\aura\routes\Router;
  *
  * Main application class that initializes the request and router, and runs the application.
  */
-class App
-{
+class App {
     public Router  $router;
-    public Request $request;
+    public HttpRequest $request;
 
     /**
      * App constructor.
      *
-     * Initializes the Request and Router instances.
+     * Initializes the HttpRequest and Router instances.
      */
     public function __construct()
     {
-        $this->request = new Request();
+        $this->request = new HttpRequest();
         $this->router  = new Router($this->request);
     }
 

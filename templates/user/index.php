@@ -1,7 +1,17 @@
 <?php include('templates/layouts/header.php'); ?>
 <div class="ghost-wrapper">
+    <?php if (isset($errors)) : ?>
+      <ul>
+        <?php foreach ($errors as $error) { ?>
+          <?php foreach ($error as $message) { ?>
+            <li class="text-center" style="list-style:none;">
+              <?php echo h($message); ?>
+            </li>
+          <?php } ?>
+        <?php } ?>
+      </ul>
+    <?php endif; ?>
     <section class="flex-box justify-center">
-       
         <div class="mt-4">
             <ul class="ghost-tab-list flex-box justify-center">
             <li class="ghost-tab-item active">Auth</li>

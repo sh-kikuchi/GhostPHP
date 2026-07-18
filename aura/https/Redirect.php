@@ -13,12 +13,10 @@ class Redirect {
      *
      * @param string $path The path to redirect to.
      * @param int $statusCode The HTTP status code for the redirect (optional, default is 302).
-     * @return void
      */
-    public static function to($path, $statusCode = 302) {
+    public static function to(string $path, int $statusCode = 302): void  {
         $url = dirname($_SERVER['SCRIPT_NAME']) . '/' . ltrim($path, '/');
-        header("Location: " . $url, true, $statusCode);
-        exit();
+        header("Location: {$url}", true, $statusCode);
     }
 
     /**

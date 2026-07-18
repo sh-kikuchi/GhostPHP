@@ -1,167 +1,202 @@
-<!-- vendor/bin/phpunit tests\models\repositories\PostRepositoryTest.php -->
 <?php
+// vendor/bin/phpunit --display-warnings tests/Repositories/UserRepositoryTest.php
 
 use PHPUnit\Framework\TestCase;
 use app\repositories\UserRepository;
 use app\entities\UserEntity as User;
 
-/**
- * Test case for the UserRepository class.
- */
-class UserRepositoryTest extends TestCase
-{
-    /**
-     * @var PDO Mocked PDO instance.
-     */
-    private $pdo;
+class UserRepositoryTest extends TestCase {
+    private PDO $pdo;
+    private PDOStatement $statement;
+    private UserRepository $userRepository;
+    private User $user;
 
-    /**
-     * @var UserRepository Instance of UserRepository to be tested.
-     */
-    private $userRepository;
+    protected function setUp(): void {
+        // Initialize the session without starting it.
+        $_SESSION = [];
 
-    /**
-     * @var User Mocked User entity.
-     */
-    private $user;
-
-    /**
-     * Set up the test environment.
-     * Initializes the mocked PDO, UserRepository, and User entities.
-     * Starts a new session for testing.
-     */
-    protected function setUp(): void
-    {
-        // Create a mock of PDO
         $this->pdo = $this->createMock(PDO::class);
+        $this->statement = $this->createMock(PDOStatement::class);
+
         $this->userRepository = new UserRepository($this->pdo);
         $this->user = $this->createMock(User::class);
-
-        // // Start session if it is not already started
-        // if (session_status() === PHP_SESSION_NONE) {
-        //     session_start();
-        // }
-        // Reset the session
-        $_SESSION = [];
     }
 
     /**
-     * Clean up after each test.
-     * Clears the session and closes it to ensure no state leakage between tests.
+     * Tests successful user registration.
      */
-    // public function tearDown(): void
-    // {
-    //     $_SESSION = [];
-    //     session_write_close();
-    // }
-
-    /**
-     * Test the signup method of the UserRepository class.
-     * Verifies that the signup method correctly interacts with the database and returns true on success.
-     */
-    public function testSignup()
-    {
+    public function testSignup(): void {
         $this->user->method('getName')->willReturn('Test User');
         $this->user->method('getEmail')->willReturn('test@example.com');
         $this->user->method('getPassword')->willReturn('password');
 
-        // Create a mock of PDOStatement
-        $statement = $this->createMock(PDOStatement::class);
-        $statement->expects($this->once())->method('execute')->willReturn(true);
+        $this->pdo
+            ->expects($this->once())
+            ->method('prepare')
+            ->with('INSERT INTO `users` (`name`, `email`, `password`) VALUES (?, ?, ?)')
+            ->willReturn($this->statement);
 
-        // Configure PDO to return the mocked PDOStatement
-        $this->pdo->method('prepare')->willReturn($statement);
+        $this->statement
+            ->expects($this->once())
+            ->method('execute')
+            ->with($this->callback(function ($params) {
+                $this->assertEquals('Test User', $params[0]);
+                $this->assertEquals('test@example.com', $params[1]);
 
-        $result = $this->userRepository->signup($this->user);
-        $this->assertTrue($result);
+                $this->assertTrue(
+                    password_verify('password', $params[2])
+                );
+
+                return true;
+            }))
+            ->willReturn(true);
+
+        $this->assertTrue(
+            $this->userRepository->signup($this->user)
+        );
     }
 
     /**
-     * Test the signin method of the UserRepository class.
-     * Checks if the signin method successfully handles the user login process.
+     * Tests retrieving a user by email.
      */
-    public function testSignin()
-    {
-        $this->user->method('getEmail')->willReturn('test@example.com');
-        $this->user->method('getPassword')->willReturn('password');
-        $password = password_hash('password', PASSWORD_DEFAULT);
-    
-        $user_data = [
-            'id' => 1,
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'password' => $password,
-        ];
-    
-        // Create a mock of PDOStatement
-        $statement = $this->createMock(PDOStatement::class);
-        $statement->method('fetch')->willReturn($user_data);
-        $statement->method('execute')->willReturn(true);
-    
-        // Configure PDO to return the mocked PDOStatement
-        $this->pdo->method('prepare')->willReturn($statement);
-    
-        // Perform signin and check result
-        $result = $this->userRepository->signin($this->user);
-        $this->assertTrue($result);
-    
-        // Verify session data
-        $this->assertArrayHasKey('signin_user', $_SESSION);
-        $this->assertEquals($user_data, $_SESSION['signin_user']);
-    }
-
-    /**
-     * Test the getUserByEmail method of the UserRepository class.
-     * Ensures that the method correctly retrieves user data by email.
-     */
-    public function testGetUserByEmail()
-    {
+    public function testGetUserByEmail(): void {
         $email = 'test@example.com';
-        $user_data = [
+
+        $expected = [
             'id' => 1,
             'name' => 'Test User',
             'email' => $email,
             'password' => password_hash('password', PASSWORD_DEFAULT)
         ];
 
-        // Create a mock of PDOStatement
-        $statement = $this->createMock(PDOStatement::class);
-        $statement->method('fetch')->willReturn($user_data);
-        $statement->method('execute')->willReturn(true);
+        $this->pdo
+            ->expects($this->once())
+            ->method('prepare')
+            ->with('SELECT * FROM `users` WHERE `email` = ? LIMIT 1')
+            ->willReturn($this->statement);
 
-        // Configure PDO to return the mocked PDOStatement
-        $this->pdo->method('prepare')->willReturn($statement);
+        $this->statement
+            ->expects($this->once())
+            ->method('execute')
+            ->with([$email]);
 
-        $result = $this->userRepository->getUserByEmail($email);
-        $this->assertEquals($user_data, $result);
+        $this->statement
+            ->expects($this->once())
+            ->method('fetch')
+            ->willReturn($expected);
+
+        $this->assertEquals(
+            $expected,
+            $this->userRepository->getUserByEmail($email)
+        );
     }
 
     /**
-     * Test the checkSign method of the UserRepository class.
-     * Verifies that the method correctly checks if a user is signed in based on session data.
+     * Tests retrieving a user when the email does not exist.
      */
-    public function testCheckSign()
-    {
-        // Clear the session and check if user is signed in
-        $_SESSION = [];
-        $this->assertFalse($this->userRepository->checkSign());
+    public function testGetUserByEmailNotFound(): void {
+        $this->pdo
+            ->method('prepare')
+            ->willReturn($this->statement);
 
-        // Simulate a signed-in user
+        $this->statement
+            ->method('execute')
+            ->willReturn(true);
+
+        $this->statement
+            ->method('fetch')
+            ->willReturn(false);
+
+        $this->assertNull(
+            $this->userRepository->getUserByEmail('notfound@test.com')
+        );
+    }
+
+    /**
+     * Tests successful user sign-in.
+     */
+    public function testSigninSuccess(): void {
+        $this->user->method('getEmail')->willReturn('test@example.com');
+        $this->user->method('getPassword')->willReturn('password');
+
+        $hashed = password_hash('password', PASSWORD_DEFAULT);
+
+        $userData = [
+            'id' => 1,
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => $hashed
+        ];
+
+        $this->pdo->method('prepare')->willReturn($this->statement);
+        $this->statement->method('execute')->willReturn(true);
+        $this->statement->method('fetch')->willReturn($userData);
+
+        $result = $this->userRepository->signin($this->user);
+
+        $this->assertTrue($result);
+        $this->assertArrayHasKey('signin_user', $_SESSION);
+    }
+
+    /**
+     * Tests sign-in with an unknown email address.
+     */
+    public function testSigninEmailNotFound(): void {
+        $this->user->method('getEmail')->willReturn('test@example.com');
+        $this->user->method('getPassword')->willReturn('password');
+
+        $this->pdo->method('prepare')->willReturn($this->statement);
+        $this->statement->method('fetch')->willReturn(false);
+
+        $result = $this->userRepository->signin($this->user);
+
+        $this->assertFalse($result);
+        $this->assertArrayNotHasKey('signin_user', $_SESSION);
+    }
+
+    /**
+     * Tests sign-in with an incorrect password.
+     */
+    public function testSigninWrongPassword(): void {
+        $this->user->method('getEmail')->willReturn('test@example.com');
+        $this->user->method('getPassword')->willReturn('wrong');
+
+        $userData = [
+            'id' => 1,
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => password_hash('correct', PASSWORD_DEFAULT)
+        ];
+
+        $this->pdo->method('prepare')->willReturn($this->statement);
+        $this->statement->method('execute')->willReturn(true);
+        $this->statement->method('fetch')->willReturn($userData);
+
+        $result = $this->userRepository->signin($this->user);
+
+        $this->assertFalse($result);
+        $this->assertArrayNotHasKey('signin_user', $_SESSION);
+    }
+
+    /**
+     * Tests whether the user is signed in.
+     */
+    public function testCheckSign(): void {
         $_SESSION['signin_user'] = ['id' => 1];
+
         $this->assertTrue($this->userRepository->checkSign());
     }
 
     /**
-     * Test the signout method of the UserRepository class.
-     * Ensures that the signout method properly clears the session data.
+     * Tests successful user sign-out.
+     *
+     * @runInSeparateProcess
      */
-    public function testSignout()
-    {
-        // Simulate a signed-in user and sign out
+    public function testSignout(): void {
         $_SESSION['signin_user'] = ['id' => 1];
+
         $this->userRepository->signout();
 
-        // Verify that the session is empty after signout
-        $this->assertArrayNotHasKey('signin_user', $_SESSION);
+        $this->assertEmpty($_SESSION);
     }
 }

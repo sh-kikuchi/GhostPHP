@@ -1,138 +1,158 @@
 <?php
+// vendor/bin/phpunit --display-warnings tests/Repositories/PostRepositoryTest.php
 
 use PHPUnit\Framework\TestCase;
 use app\repositories\PostRepository;
 use app\entities\PostEntity as Post;
 
-/**
- * Test case for the PostRepository class
- */
-class PostRepositoryTest extends TestCase
-{
-    private $pdo;
-    private $postRepository;
-    private $post;
+class PostRepositoryTest extends TestCase {
+    private PDO $pdo;
+    private PDOStatement $statement;
+    private PostRepository $repository;
+    private Post $post;
 
-    /**
-     * Set up the test environment
-     */
-    protected function setUp(): void
-    {
-        // Create a mock of PDO
+    protected function setUp(): void {
         $this->pdo = $this->createMock(PDO::class);
-        $this->postRepository = new PostRepository($this->pdo);
+        $this->statement = $this->createMock(PDOStatement::class);
+
+        $this->repository = new PostRepository($this->pdo);
+
         $this->post = $this->createMock(Post::class);
     }
 
     /**
-     * Test the show method of the PostRepository class
+     * Tests retrieving all posts.
      */
-    public function testShow()
-    {
-        // モックされたPDOStatementを作成
-        $statement = $this->createMock(PDOStatement::class);
-        
-        // fetchAll()が返す値を設定
-        $statement->method('fetchAll')->willReturn([
-            ['id' => 1, 'user_id' => 1, 'title' => 'Test Title', 'body' => 'Test Body']
-        ]);
-    
-        // query()が呼ばれた際に、上記のモックされたPDOStatementを返すように設定
-        $this->pdo->method('prepare')->willReturn($statement);
-    
-        // show()メソッドを実行して結果を検証
-        $result = $this->postRepository->show();
-        
-        // 結果の件数が1件であることを確認
-        $this->assertCount(1, $result);
-        
-        // 結果のタイトルが「Test Title」であることを確認
-        $this->assertEquals('Test Title', $result[count($result)-1]['title']);
-    }
-    /**
-     * Test the getPost method of the PostRepository class
-     */
-    public function testGetPost()
-    {
-        $expectedPost = [
-            'id' => 1,
-            'title' => 'Test Post',
-            'content' => 'This is a test post.'
+    public function testShow(): void {
+        $expected = [
+            [
+                'id' => 1,
+                'title' => 'Test Title',
+                'body' => 'Test Body',
+                'user_id' => 1
+            ]
         ];
 
-        // Create a mock of PDOStatement
-        $statement = $this->createMock(PDOStatement::class);
-        $statement->method('fetch')->willReturn($expectedPost);
+        $this->pdo
+            ->expects($this->once())
+            ->method('prepare')
+            ->with('SELECT * FROM `posts`')
+            ->willReturn($this->statement);
 
-        // Mock prepare to return the PDOStatement mock
-        $this->pdo->method('prepare')->willReturn($statement);
+        $this->statement
+            ->expects($this->once())
+            ->method('execute');
 
-        // Execute getPost and check the result
-        $result = $this->postRepository->getPost(1);
-        $this->assertEquals($expectedPost, $result);
+        $this->statement
+            ->expects($this->once())
+            ->method('fetchAll')
+            ->with(PDO::FETCH_ASSOC)
+            ->willReturn($expected);
+
+        $this->assertEquals($expected, $this->repository->show());
     }
 
     /**
-     * Test the create method of the PostRepository class
+     * Tests retrieving a post by ID.
      */
-    public function testCreate()
-    {
-        // Mock post data
-        $this->post->method('getUserId')->willReturn(1);
+    public function testGetPost(): void {
+        $expected = [
+            'id' => 1,
+            'title' => 'Test',
+            'body' => 'Body',
+            'user_id' => 1
+        ];
+
+        $this->pdo
+            ->expects($this->once())
+            ->method('prepare')
+            ->with('SELECT * FROM `posts` WHERE id = ?')
+            ->willReturn($this->statement);
+
+        $this->statement
+            ->expects($this->once())
+            ->method('execute')
+            ->with([1]);
+
+        $this->statement
+            ->expects($this->once())
+            ->method('fetch')
+            ->with(PDO::FETCH_ASSOC)
+            ->willReturn($expected);
+
+        $this->assertEquals($expected, $this->repository->getPost(1));
+    }
+
+    /**
+     * Tests creating a new post.
+     */
+    public function testCreatePost(): void {
         $this->post->method('getTitle')->willReturn('Test Title');
         $this->post->method('getBody')->willReturn('Test Body');
+        $this->post->method('getUserId')->willReturn(5);
 
-        // Create a mock for the PDOStatement and expect execute() to be called once
-        $statement = $this->createMock(PDOStatement::class);
-        $statement->expects($this->once())->method('execute')->willReturn(true);
+        $this->pdo
+            ->expects($this->once())
+            ->method('prepare')
+            ->with('INSERT INTO `posts` (`title`, `body`, `user_id`) VALUES (?, ?, ?)')
+            ->willReturn($this->statement);
 
-        // Mock prepare to return the PDOStatement mock
-        $this->pdo->method('prepare')->willReturn($statement);
+        $this->statement
+            ->expects($this->once())
+            ->method('execute')
+            ->with([
+                'Test Title',
+                'Test Body',
+                5
+            ])
+            ->willReturn(true);
 
-        // Execute createPost and verify the result
-        $result = $this->postRepository->createPost($this->post);
-        $this->assertTrue($result);
+        $this->assertTrue($this->repository->createPost($this->post));
     }
 
     /**
-     * Test the update method of the PostRepository class
+     * Tests updating an existing post.
      */
-    public function testUpdate()
-    {
-        // Mock post data
-        $this->post->method('getId')->willReturn(1);
-        $this->post->method('getTitle')->willReturn('Updated Title');
-        $this->post->method('getBody')->willReturn('Updated Body');
+    public function testUpdatePost(): void {
+        $this->post->method('getId')->willReturn(10);
+        $this->post->method('getTitle')->willReturn('New Title');
+        $this->post->method('getBody')->willReturn('New Body');
 
-        // Create a mock for the PDOStatement and expect execute() to be called once
-        $statement = $this->createMock(PDOStatement::class);
-        $statement->expects($this->once())->method('execute')->willReturn(true);
+        $this->pdo
+            ->expects($this->once())
+            ->method('prepare')
+            ->with('UPDATE `posts` SET `title` = ?, `body` = ? WHERE id = ?')
+            ->willReturn($this->statement);
 
-        // Mock prepare to return the PDOStatement mock
-        $this->pdo->method('prepare')->willReturn($statement);
+        $this->statement
+            ->expects($this->once())
+            ->method('execute')
+            ->with([
+                'New Title',
+                'New Body',
+                10
+            ])
+            ->willReturn(true);
 
-        // Execute updatePost and verify the result
-        $result = $this->postRepository->updatePost($this->post);
-        $this->assertTrue($result);
+        $this->assertTrue($this->repository->updatePost($this->post));
     }
 
     /**
-     * Test the delete method of the PostRepository class
+     * Tests deleting a post.
      */
-    public function testDelete()
-    {
-        // Mock post data
-        $this->post->method('getId')->willReturn(1);
+    public function testDeletePost(): void {
+        $this->pdo
+            ->expects($this->once())
+            ->method('prepare')
+            ->with('DELETE FROM `posts` WHERE id = ?')
+            ->willReturn($this->statement);
 
-        // Create a mock for the PDOStatement and expect execute() to be called once
-        $statement = $this->createMock(PDOStatement::class);
-        $statement->expects($this->once())->method('execute')->willReturn(true);
+        $this->statement
+            ->expects($this->once())
+            ->method('execute')
+            ->with([3])
+            ->willReturn(true);
 
-        // Mock prepare to return the PDOStatement mock
-        $this->pdo->method('prepare')->willReturn($statement);
-
-        // Execute deletePost and verify the result
-        $result = $this->postRepository->deletePost($this->post);
-        $this->assertTrue($result);
+        $this->assertTrue($this->repository->deletePost(3));
     }
 }
