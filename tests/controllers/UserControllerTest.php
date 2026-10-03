@@ -3,6 +3,7 @@
 namespace tests\Controllers;
 
 use PHPUnit\Framework\TestCase;
+use app\aura\Lang;
 use app\controllers\UserController;
 use app\services\UserService;
 use app\aura\utils\Mail;
@@ -54,11 +55,14 @@ class UserControllerTest extends TestCase {
             ->method('checkSign')
             ->willReturn(true);
 
+        $_SESSION['ERROR_MESSAGES'] = [['files' => 'error']];
+
         ob_start();
         $this->controller->myPage();
         ob_end_clean();
 
-        $this->assertTrue(true);
+        // Errors are shown once and then cleared
+        $this->assertArrayNotHasKey('ERROR_MESSAGES', $_SESSION);
     }
 
     /**
@@ -147,21 +151,42 @@ class UserControllerTest extends TestCase {
      * Tests successful user sign-in.
      */
     public function testSigninSuccess(): void {
+        $_SESSION['csrf_token']['signin'] = 'token';
+        $_POST['csrf_token'] = 'token';
+
         $request = $this->createMock(UserRequest::class);
 
         $this->UserService
+            ->expects($this->once())
             ->method('signin')
             ->willReturn(true);
 
         $this->controller->signin($request);
+    }
 
-        $this->assertTrue(true);
+    /**
+     * Tests that sign-in is rejected when the CSRF token is invalid.
+     */
+    public function testSigninInvalidToken(): void {
+        $_SESSION['csrf_token']['signin'] = 'token';
+        $_POST['csrf_token'] = 'wrong';
+
+        $request = $this->createMock(UserRequest::class);
+
+        $this->UserService
+            ->expects($this->never())
+            ->method('signin');
+
+        $this->controller->signin($request);
     }
 
     /**
      * Tests failed user sign-in.
      */
     public function testSigninFail(): void {
+        $_SESSION['csrf_token']['signin'] = 'token';
+        $_POST['csrf_token'] = 'token';
+
         $request = $this->createMock(UserRequest::class);
 
         $this->UserService
@@ -170,7 +195,10 @@ class UserControllerTest extends TestCase {
 
         $this->controller->signin($request);
 
-        $this->assertTrue(true);
+        $this->assertSame(
+            [['email' => Lang::get('SIGNIN_FAILED')]],
+            $_SESSION['ERROR_MESSAGES']
+        );
     }
 
     /**
@@ -195,11 +223,35 @@ class UserControllerTest extends TestCase {
         $this->UserService
             ->expects($this->once())
             ->method('upload')
-            ->with($request);
+            ->with($request)
+            ->willReturn([
+                ['name' => 'a.png', 'success' => true, 'path' => 'storage/a.png'],
+            ]);
 
         $this->controller->upload($request);
 
-        $this->assertTrue(true);
+        $this->assertArrayNotHasKey('ERROR_MESSAGES', $_SESSION);
+    }
+
+    /**
+     * Tests that failed uploads are reported as error messages.
+     */
+    public function testUploadFailureSetsErrors(): void {
+        $request = $this->createMock(FileRequest::class);
+
+        $this->UserService
+            ->method('upload')
+            ->willReturn([
+                ['name' => 'a.png', 'success' => true, 'path' => 'storage/a.png'],
+                ['name' => 'b.webp', 'success' => false, 'message' => 'b.webp has an invalid file type.'],
+            ]);
+
+        $this->controller->upload($request);
+
+        $this->assertSame(
+            [['files' => 'b.webp has an invalid file type.']],
+            $_SESSION['ERROR_MESSAGES']
+        );
     }
 
     /**

@@ -155,4 +155,22 @@ class PostRepositoryTest extends TestCase {
 
         $this->assertTrue($this->repository->deletePost(3));
     }
+
+    /**
+     * Tests that query() in single-row mode returns null (not false) when no row matches.
+     */
+    public function testQuerySingleRowReturnsNullWhenNotFound(): void {
+        $this->pdo
+            ->method('prepare')
+            ->willReturn($this->statement);
+
+        $this->statement
+            ->method('fetch')
+            ->with(PDO::FETCH_ASSOC)
+            ->willReturn(false);
+
+        $this->assertNull(
+            $this->repository->query('SELECT * FROM `posts` WHERE id = ?', [999], false)
+        );
+    }
 }

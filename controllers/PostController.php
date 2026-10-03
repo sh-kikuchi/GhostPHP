@@ -41,12 +41,12 @@ class PostController extends Controller {
      * @return void
      */
     public function index(): void {
-        $data = $this->post_service->index();
-
-        if (!$data) {
+        if (!$this->home_service->checkSign()) {
             Redirect::to('signin');
             return;
         }
+
+        $data = $this->post_service->index();
 
         $pagination = paginate($data, 10);
 

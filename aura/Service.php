@@ -17,13 +17,16 @@ class Service {
      */
     private Repository $repository;
 
-    private bool $inTransaction = false;
+    /**
+     * @var bool Whether this instance started the current transaction.
+     */
+    private bool $ownsTransaction = false;
 
     /**
      * Service constructor.
      *
-     * 
-     * */
+     * Initializes the repository used for transaction management.
+     */
     public function __construct() {
         $this->repository = new Repository();   
     }
@@ -59,53 +62,59 @@ class Service {
      * Begin a transaction on the repository.
      *
      * Starts a transaction to ensure that multiple database operations are handled atomically.
+     * If a transaction is already active on the shared connection (e.g. started by an outer Service),
+     * this instance joins it and leaves commit/rollBack to the owner.
      *
-     * @return bool True if the transaction was started successfully, false otherwise.
+     * @return bool True if this instance started the transaction, false if it joined an existing one.
      */
     public function beginTransaction(): bool {
-        if ($this->inTransaction) {
-            return false; // 既にトランザクション中
+        $pdo = $this->repository->getPdo();
+
+        if ($pdo->inTransaction()) {
+            return false; // 外側のトランザクションに参加する
         }
 
-        // RepositoryからPDOを取得してトランザクションを開始
-        $this->repository->getPdo()->beginTransaction();
-        $this->inTransaction = true;
+        $pdo->beginTransaction();
+        $this->ownsTransaction = true;
         return true;
     }
 
     /**
      * Commit the current transaction.
      *
-     * If all database operations are successful, commit the transaction to make changes permanent.
+     * Only the instance that started the transaction commits it.
      *
-     * @return bool True if the transaction was committed successfully, false otherwise.
+     * @return bool True if committed, false if this instance does not own the transaction.
      */
     public function commit(): bool {
-        if (!$this->inTransaction) {
-            return false; // トランザクションが開始されていない
+        if (!$this->ownsTransaction) {
+            return false; // 自分が開始したトランザクションではない
         }
 
-        // RepositoryからPDOを取得してコミット
         $this->repository->getPdo()->commit();
-        $this->inTransaction = false;
+        $this->ownsTransaction = false;
         return true;
     }
 
     /**
      * Roll back the current transaction.
      *
-     * If any database operation fails, roll back the transaction to maintain database consistency.
+     * Only the instance that started the transaction rolls it back.
+     * A joined (inner) Service should throw instead, so the owner can roll back.
      *
-     * @return bool True if the transaction was rolled back successfully, false otherwise.
+     * @return bool True if rolled back, false if this instance does not own the transaction.
      */
     public function rollBack(): bool {
-        if (!$this->inTransaction) {
-            return false; // トランザクションが開始されていない
+        if (!$this->ownsTransaction) {
+            return false; // 自分が開始したトランザクションではない
         }
 
-        // RepositoryからPDOを取得してロールバック
-        $this->repository->getPdo()->rollBack();
-        $this->inTransaction = false;
+        $pdo = $this->repository->getPdo();
+        // 既に終了している場合に二重ロールバックで落ちないようにする
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        $this->ownsTransaction = false;
         return true;
     }
 

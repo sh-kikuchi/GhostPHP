@@ -44,32 +44,36 @@ class PostControllerTest extends TestCase {
      * Tests successful retrieval of the post list.
      */
     public function testIndexSuccess(): void {
-        $this->postService = $this->createMock(PostService::class);
+        $this->UserService->method('checkSign')->willReturn(true);
         $this->postService->method('index')->willReturn([
-            'data' => [
-                ['id' => 1, 'title' => 'test']
-            ],
-            'max_page' => 1
+            ['id' => 1, 'title' => 'test', 'body' => 'body', 'updated_at' => '2026-10-03']
         ]);
 
         $this->controller->index();
 
-        $this->assertTrue(true);
-
-        error_reporting(E_ALL & ~E_WARNING);
+        $this->assertStringContainsString('test', ob_get_contents());
     }
 
     /**
-     * Tests failure to retrieve the post list.
+     * Tests that an empty post list is still rendered (not redirected to signin).
      */
-    public function testIndexFail(): void {
-        $this->postService->method('index')->willReturn(false);
+    public function testIndexEmpty(): void {
+        $this->UserService->method('checkSign')->willReturn(true);
+        $this->postService->method('index')->willReturn([]);
 
         $this->controller->index();
 
-        $this->assertTrue(true);
+        $this->assertStringContainsString('Posts', ob_get_contents());
+    }
 
-        error_reporting(E_ALL & ~E_WARNING);
+    /**
+     * Tests that the post list is not retrieved when the user is not signed in.
+     */
+    public function testIndexNotSignin(): void {
+        $this->UserService->method('checkSign')->willReturn(false);
+        $this->postService->expects($this->never())->method('index');
+
+        $this->controller->index();
     }
 
     /**

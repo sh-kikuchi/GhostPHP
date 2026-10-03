@@ -23,60 +23,39 @@ class UserRepository extends Repository implements IUserRepository {
      *
      * @param User $user The user entity containing registration data.
      * @return bool True on success, false on failure.
+     * @throws \PDOException If the insert fails (error handling and rollback are done by the Service).
      */
     public function signup(User $user): bool {
-        $result = false;
-
         $data = [
             'name' => $user->getName(),
             'email' => $user->getEmail(),
             'password' => password_hash($user->getPassword(), PASSWORD_DEFAULT),
         ];
 
-        try {
-            $result = $this->create($data);
-        } catch (\Exception $e) {
-            $this->pdo->rollBack();
-            error_log($e, 3, '/log/error.log');
-        } finally {
-            return $result;
-        }
+        return $this->create($data);
     }
     
     /**
      * Authenticates a user based on email and password.
      * Stores user data in session on success.
+     * The failure message is set by the Controller, so the reason (email or password) is not exposed here.
      *
      * @param User $user The user entity containing login credentials.
      * @return bool True if authentication succeeds, false otherwise.
      */
     public function signin(User $user): bool {
+        $user_data = $this->getUserByEmail($user->getEmail());
 
-        $result = false;
-
-        $email = $user->getEmail();
-        $password = $user->getPassword();
-
-        $user_data = $this->getUserByEmail($email);
-
-        if (!$user_data) {
-            $_SESSION['msg'] = 'E-mail does not match.';
-            return $result;
+        if (!$user_data || !password_verify($user->getPassword(), $user_data['password'])) {
+            return false;
         }
 
-        if (password_verify($password, $user_data['password'])) {
-
-            if (session_status() === PHP_SESSION_ACTIVE) {
-                session_regenerate_id(true);
-            }
-
-            $_SESSION['signin_user'] = $user_data;
-            $result = true;
-        } else {
-            $_SESSION['msg'] = 'Password is incorrect.';
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_regenerate_id(true);
         }
 
-        return $result;
+        $_SESSION['signin_user'] = $user_data;
+        return true;
     }
 
     /**

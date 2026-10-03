@@ -20,7 +20,7 @@ class Migrate {
      * @throws PDOException If there is an error executing the SQL statements.
      */
     public function run() {
-        require_once 'aura/database/DataBaseConnect.php';
+        require_once __DIR__ . '/../../database/DataBaseConnect.php';
         $dbConnect = new app\aura\database\DataBaseConnect();
         $pdo = $dbConnect->getPDO();
 
@@ -67,4 +67,3 @@ class Migrate {
         }
     }
 };
-?>

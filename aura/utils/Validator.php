@@ -5,6 +5,8 @@ namespace app\aura\utils;
  * Class Validator
  * 
  * This class provides various validation methods for validating input data.
+ *
+ * @deprecated Moved to app\aura\https\Validator. This class will be removed in the next major version (v5.0).
  */
 class Validator {
     private $errors = [];
@@ -34,7 +36,7 @@ class Validator {
      * @param string $field The field name.
      * @param string $message The error message.
      */
-    protected function addError($field, $message) {
+    protected function addError(string $field, string $message) {
         $this->errors[$field] = $message;
     }
 
@@ -45,7 +47,7 @@ class Validator {
      * @param string $defaultMessage The default error message.
      * @return string The custom or default error message.
      */
-    protected function getCustomMessage($field, $defaultMessage) {
+    protected function getCustomMessage(string $field, string $defaultMessage) {
         return isset($this->customMessages[$field]) ? $this->customMessages[$field] : $defaultMessage;
     }
 
@@ -56,7 +58,7 @@ class Validator {
      * @param string $field The field name for the email address.
      * @return bool True if valid, false otherwise.
      */
-    public function mailFormat($email, $field = 'email') {
+    public function mailFormat(string $email, string $field = 'email') {
         if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
             $message = $this->getCustomMessage($field, 'Invalid email address');
             $this->addError($field, $message);
@@ -71,7 +73,7 @@ class Validator {
      * @param mixed $value The value to check.
      * @param string $field The field name for the value.
      */
-    public function required($value, $field = 'value') {
+    public function required($value, string $field = 'value') {
         if (empty($value)) {
             $message = $this->getCustomMessage($field, $field . ' is required');
             $this->addError($field, $message);

@@ -95,10 +95,10 @@ class UserService extends Service {
      * Upload a file.
      *
      * @param FileRequest $file_request
-     * @return void
+     * @return array Upload result per file (see File::uploadFile()).
      */
-    public function upload(FileRequest $file_request): void {
-        $this->file->uploadFile(
+    public function upload(FileRequest $file_request): array {
+        return $this->file->uploadFile(
             $file_request->files()
         );
     }

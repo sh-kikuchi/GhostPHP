@@ -52,14 +52,12 @@ $app->router->get('error', function () { include "templates/errors/error.php";})
 $app->router->get('signin',  [UserController::class, 'showSignInForm']);
 $app->router->get('signup',  [UserController::class, 'showSignUpForm']);
 $app->router->get('index',   [UserController::class, 'myPage']);
-$app->router->get('complete',[UserController::class, 'complete']);
 
 $app->router->post('signin',  [UserController::class, 'signin']);
 $app->router->post('signup',  [UserController::class, 'signup']);
 $app->router->post('signout', [UserController::class, 'signout']);
 $app->router->post('mail',    [UserController::class, 'mail']);
 $app->router->post('upload',  [UserController::class, 'upload']);
-$app->router->post('pdf',     [UserController::class, 'pdf']);
 
 /**
  * ----------------------------------------

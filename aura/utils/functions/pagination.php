@@ -19,12 +19,11 @@
 function paginate(array $data, int $showPerPage){
     $return_data = [];
 
-    define('MAX', $showPerPage);                           // show data per page  
-    $data_count = count($data);                            // Total data
-    $max_page = ceil($data_count / MAX);                   // Total templates
-    $now = !isset($_GET['page_id'])? 1: $_GET['page_id'];  // What number?
-    $start_no = ($now - 1) * MAX;                          // What number of the array should I get it from?
-    $disp_data = array_slice($data, $start_no, MAX, true); // array_slice
+    $data_count = count($data);                                    // Total data
+    $max_page = ceil($data_count / $showPerPage);                  // Total templates
+    $now = max(1, (int)($_GET['page_id'] ?? 1));                   // What number?
+    $start_no = ($now - 1) * $showPerPage;                         // What number of the array should I get it from?
+    $disp_data = array_slice($data, $start_no, $showPerPage, true); // array_slice
     
     $return_data['data']     = $disp_data;
     $return_data['max_page'] = $max_page;
