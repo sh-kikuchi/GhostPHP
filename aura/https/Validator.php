@@ -1,9 +1,11 @@
 <?php
 namespace app\aura\https;
 
+use app\aura\Lang;
+
 /**
  * Class Validator
- * 
+ *
  * This class provides various validation methods for validating input data.
  */
 class Validator {
@@ -58,7 +60,7 @@ class Validator {
      */
     public function mailFormat(string $email, string $field = 'email') {
         if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
-            $message = $this->getCustomMessage($field, 'Invalid email address');
+            $message = $this->getCustomMessage($field, Lang::get('MAIL_FORMAT'));
             $this->addError($field, $message);
             return false;
         }
@@ -73,7 +75,7 @@ class Validator {
      */
     public function required($value, string $field = 'value') {
         if (empty($value)) {
-            $message = $this->getCustomMessage($field, (string)$field . ' is required');
+            $message = $this->getCustomMessage($field, Lang::get('REQUIRED', ['field' => $field]));
             $this->addError($field, $message);
         }
     }
@@ -89,7 +91,7 @@ class Validator {
             && $value['error'][0] === UPLOAD_ERR_OK;
     
         if(!$result){
-            $message = $this->getCustomMessage($field, (string)$field . ' is required');
+            $message = $this->getCustomMessage($field, Lang::get('HAS_FILE', ['field' => $field]));
             $this->addError($field, $message);
         }
     }
@@ -102,7 +104,7 @@ class Validator {
      */
     public function passwordFormat(string $password, string $field = 'password') {
         if (!preg_match("/\A[a-z\d]{8,100}+\z/i", $password)) {
-            $message = $this->getCustomMessage($field, 'The password must be at least 8 alphanumeric characters and no more than 100 characters.');
+            $message = $this->getCustomMessage($field, Lang::get('PASSWORD_FORMAT'));
             $this->addError($field, $message);
         }
     }
@@ -115,7 +117,7 @@ class Validator {
      */
     public function passwordConfirm(string $password, string $password_conf) {
         if ($password !== $password_conf) {
-            $message = $this->getCustomMessage('password_conf', 'Password and confirmation password do not match.');
+            $message = $this->getCustomMessage('password_conf', Lang::get('PASSWORD_CONFIRM'));
             $this->addError('password_conf', $message);
         }
     }
@@ -138,7 +140,7 @@ class Validator {
     ) {
         // Check if the field is required and empty
         if ($required && empty($value)) {
-            $message = $this->getCustomMessage($field, $field . ' is required');
+            $message = $this->getCustomMessage($field, Lang::get('VALIDATE_STRING_REQUIRED', ['field' => $field]));
             $this->addError($field, $message);
         }
     }
@@ -152,7 +154,7 @@ class Validator {
      */
     public function minLength(string $value, string $field, int $min): void {
         if ($value === null || mb_strlen($value) < $min) {
-            $message = $this->getCustomMessage($field, "Minimum length is $min characters");
+            $message = $this->getCustomMessage($field, Lang::get('MIN_LENGTH', ['field' => $field, 'min' => $min]));
             $this->addError($field, $message);
         }
     }
@@ -166,7 +168,95 @@ class Validator {
      */
     public function maxLength(string $value, string $field, int $max): void {
         if ($value !== null && mb_strlen($value) > $max) {
-            $message = $this->getCustomMessage($field, "Maximum length is $max characters");
+            $message = $this->getCustomMessage($field, Lang::get('MAX_LENGTH', ['field' => $field, 'max' => $max]));
+            $this->addError($field, $message);
+        }
+    }
+    
+    /**
+     * Validate that a value is numeric (integers, floats, and numeric strings such as "12", "-3.5").
+     *
+     * @param mixed $value The value to check.
+     * @param string $field The field name for the value.
+     */
+    public function numeric($value, string $field = 'value'): void {
+        if (!is_numeric($value)) {
+            $message = $this->getCustomMessage($field, Lang::get('NUMERIC', ['field' => $field]));
+            $this->addError($field, $message);
+        }
+    }
+
+    /**
+     * Validate that a value is an integer (numeric strings without a decimal point are allowed).
+     *
+     * @param mixed $value The value to check.
+     * @param string $field The field name for the value.
+     */
+    public function integer($value, string $field = 'value'): void {
+        if (filter_var($value, FILTER_VALIDATE_INT) === false) {
+            $message = $this->getCustomMessage($field, Lang::get('INTEGER', ['field' => $field]));
+            $this->addError($field, $message);
+        }
+    }
+
+    /**
+     * Validate that a numeric value is greater than or equal to a minimum.
+     *
+     * @param mixed $value The value to check.
+     * @param string $field The field name for the value.
+     * @param int|float $min The minimum allowed value.
+     */
+    public function min($value, string $field, int|float $min): void {
+        if (!is_numeric($value) || (float)$value < $min) {
+            $message = $this->getCustomMessage($field, Lang::get('MIN', ['min' => $min]));
+            $this->addError($field, $message);
+        }
+    }
+
+    /**
+     * Validate that a numeric value is less than or equal to a maximum.
+     *
+     * @param mixed $value The value to check.
+     * @param string $field The field name for the value.
+     * @param int|float $max The maximum allowed value.
+     */
+    public function max($value, string $field, int|float $max): void {
+        if (!is_numeric($value) || (float)$value > $max) {
+            $message = $this->getCustomMessage($field, Lang::get('MAX', ['max' => $max]));
+            $this->addError($field, $message);
+        }
+    }
+
+    /**
+     * Validate that a numeric value is greater than or equal to another field's value
+     * (e.g. an end page must not be before its start page).
+     *
+     * @param mixed $value The value to check (e.g. end_page).
+     * @param string $field The field name for the value.
+     * @param mixed $compareValue The value it must be greater than or equal to (e.g. start_page).
+     * @param string $compareField The field name of the compared value.
+     */
+    public function greaterThanOrEqual($value, string $field, $compareValue, string $compareField): void {
+        if (!is_numeric($value) || !is_numeric($compareValue) || (float)$value < (float)$compareValue) {
+            $message = $this->getCustomMessage($field, Lang::get('GREATER_THAN_OR_EQUAL', [
+                'field' => $field,
+                'compare_field' => $compareField,
+            ]));
+            $this->addError($field, $message);
+        }
+    }
+
+    /**
+     * Validate that a numeric value falls within an inclusive range.
+     *
+     * @param mixed $value The value to check.
+     * @param string $field The field name for the value.
+     * @param int|float $min The minimum allowed value.
+     * @param int|float $max The maximum allowed value.
+     */
+    public function between($value, string $field, int|float $min, int|float $max): void {
+        if (!is_numeric($value) || (float)$value < $min || (float)$value > $max) {
+            $message = $this->getCustomMessage($field, Lang::get('BETWEEN', ['min' => $min, 'max' => $max]));
             $this->addError($field, $message);
         }
     }

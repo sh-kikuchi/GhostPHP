@@ -4,7 +4,6 @@ namespace app\services;
 
 use app\aura\Service;
 use app\aura\Logger;
-use app\aura\https\Redirect;
 use app\aura\utils\Session;
 use app\requests\PostRequest;
 use app\entities\PostEntity as Post;
@@ -38,19 +37,11 @@ class PostService extends Service {
     /**
      * Retrieve the post list.
      *
-     * @return array|void
+     * The sign-in check is done by the Controller before calling this method.
+     *
+     * @return array List of posts (empty array if there are none).
      */
-    public function index() {
-        $result = $this->userRepository->checkSign();
-
-        if (!$result) {
-            $this->logger->warn(
-                'User not signed in, redirecting to signin page.'
-            );
-
-            return Redirect::to('signin');
-        }
-
+    public function index(): array {
         return $this->postRepository->show();
     }
 

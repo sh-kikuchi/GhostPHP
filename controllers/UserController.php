@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use app\aura\Controller;
+use app\aura\Lang;
 use app\aura\Template;
 use app\aura\https\Redirect;
 use app\aura\utils\Mail;
@@ -56,6 +57,8 @@ class UserController extends Controller
                 'signin_user' => $_SESSION['signin_user']
             ]
         );
+
+        unset($_SESSION['ERROR_MESSAGES']);
 
         $template->render();
     }
@@ -145,8 +148,15 @@ class UserController extends Controller
      * @return void
      */
     public function signin(UserRequest $user_request): void {
+        if (!$this->checkToken('signin')) {
+            Redirect::to('signin');
+            return;
+        }
+
         $result = $this->home_service->signin($user_request);
         if (!$result) {
+            // Use one message for both cases so registered email addresses cannot be guessed
+            $_SESSION['ERROR_MESSAGES'] = [['email' => Lang::get('SIGNIN_FAILED')]];
             Redirect::to('signin');
             return;
         }
@@ -172,7 +182,19 @@ class UserController extends Controller
      * @return void
      */
     public function upload(FileRequest $file_request): void {
-        $this->home_service->upload($file_request);
+        $results = $this->home_service->upload($file_request);
+
+        $errors = [];
+        foreach ($results as $result) {
+            if (!$result['success']) {
+                $errors[] = ['files' => $result['message']];
+            }
+        }
+
+        if (!empty($errors)) {
+            $_SESSION['ERROR_MESSAGES'] = $errors;
+        }
+
         Redirect::to('index');
         return;
     }

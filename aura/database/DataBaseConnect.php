@@ -11,14 +11,29 @@ use PDOException;
  * Manages the connection to the database using PDO.
  */
 class DataBaseConnect {
+    /**
+     * @var PDO|null The PDO instance shared within a single request.
+     */
+    private static ?PDO $shared = null;
+
     private $pdo;
 
     /**
      * DataBaseConnect constructor.
-     * Initializes the PDO connection.
+     * Reuses the shared PDO connection, creating it on first use.
      */
     public function __construct() {
-        $this->pdo = $this->connect();
+        // 同一リクエスト内では接続を1本に揃え、Serviceのトランザクションを全Repositoryに効かせる
+        $this->pdo = self::$shared ??= $this->connect();
+    }
+
+    /**
+     * Discards the shared PDO connection (mainly for tests).
+     *
+     * @return void
+     */
+    public static function reset(): void {
+        self::$shared = null;
     }
 
     /**

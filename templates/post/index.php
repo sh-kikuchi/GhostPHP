@@ -3,7 +3,9 @@
     <?php if (isset($errors)) : ?>
         <ul>
             <?php foreach($errors as $error) {?>
-                <li class="text-center" style="list-style:none;"><?php echo h($error);?></li>
+                <?php foreach($error as $message) {?>
+                    <li class="text-center" style="list-style:none;"><?php echo h($message);?></li>
+                <?php }?>
             <?php }?>
         </ul>
     <?php endif; ?>

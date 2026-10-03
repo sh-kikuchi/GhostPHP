@@ -13,6 +13,22 @@ class Template {
     protected array $data;
 
     /**
+     * Base directory that template files are resolved against.
+     * Set by the consuming application (e.g. in bootstrap.php) since
+     * templates are application content, not part of this framework.
+     */
+    private static string $basePath = 'templates';
+
+    /**
+     * Configure the base directory used to resolve template paths.
+     *
+     * @param string $path Absolute path to the application's templates directory.
+     */
+    public static function setBasePath(string $path): void {
+        self::$basePath = rtrim($path, '/');
+    }
+
+    /**
      * Template constructor.
      *
      * @param string $path The path to the template file.
@@ -31,12 +47,12 @@ class Template {
      * @return void
      */
     public function render() {
-        if (count($this->data) > 0) {
+        if (\count($this->data) > 0) {
             foreach ($this->data as $key => $value) {
                 ${$key} = $value;
             }
         }
 
-        include "templates/" . $this->path . '.php';
+        include self::$basePath . '/' . $this->path . '.php';
     }
 }

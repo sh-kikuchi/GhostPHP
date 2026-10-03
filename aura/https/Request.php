@@ -45,10 +45,14 @@ abstract class Request {
         return $this->data;
     }
 
-    // public function input(string $key): mixed
-    // {
-    //     return $this->data[$key] ?? null;
-    // }
+    /**
+     * Retrieve a single input value, supporting dot notation for nested arrays
+     * (e.g. "user.name" reads $data['user']['name']).
+     *
+     * @param string $key Input key, optionally dot-separated for nested values
+     * @param mixed $default Value returned when the key does not exist
+     * @return mixed
+     */
     public function input(string $key, mixed $default = null): mixed {
         $keys = explode('.', $key);
 
@@ -85,6 +89,11 @@ abstract class Request {
         return $file;
     }
 
+    /**
+     * Retrieve all uploaded files.
+     *
+     * @return array|null Uploaded files keyed by field name (empty array if none)
+     */
     public function files(): ?array {
        return $this->data['_files'] ?? [];
     }

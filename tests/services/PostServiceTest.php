@@ -61,11 +61,6 @@ class PostServiceTest extends TestCase {
             ]
         ];
 
-        $this->userRepository
-            ->expects($this->once())
-            ->method('checkSign')
-            ->willReturn(true);
-
         $this->postRepository
             ->expects($this->once())
             ->method('show')
@@ -74,6 +69,20 @@ class PostServiceTest extends TestCase {
         $result = $this->service->index();
 
         $this->assertEquals($posts, $result);
+    }
+
+    /**
+     * Test retrieving an empty post list returns an empty array.
+     *
+     * @return void
+     */
+    public function testIndexEmpty(): void {
+        $this->postRepository
+            ->expects($this->once())
+            ->method('show')
+            ->willReturn([]);
+
+        $this->assertSame([], $this->service->index());
     }
 
     /**

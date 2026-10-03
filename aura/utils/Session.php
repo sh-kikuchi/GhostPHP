@@ -1,10 +1,29 @@
 <?php
 namespace app\aura\utils;
 
+/**
+ * Class Session
+ *
+ * Starts the PHP session and manages its expiry, ID regeneration,
+ * old input values and CSRF tokens.
+ */
 class Session {
+    /**
+     * @var bool Whether the session has been started.
+     */
     protected static $sessionStarted = false;
+
+    /**
+     * @var bool Whether the session ID has been regenerated.
+     */
     protected static $sessionIdRegenerated = false;
 
+    /**
+     * Session constructor.
+     *
+     * Starts the session if needed, sets the expiry time,
+     * regenerates the session ID and clears the session when expired.
+     */
     public function __construct(){
         // check session status
         $this->isSessionStarted();
@@ -21,6 +40,11 @@ class Session {
         }
     }
 
+    /**
+     * Clears all session data.
+     *
+     * @return void
+     */
     public function clear(){
       $_SESSION = [];
     }
@@ -53,6 +77,11 @@ class Session {
       }
     }
 
+    /**
+     * Generates a CSRF token and stores it in the session.
+     *
+     * @return string The generated CSRF token.
+     */
     public function setToken() :string {
       $csrf_token = bin2hex(random_bytes(32));
       $_SESSION['csrf_token'] = $csrf_token;
@@ -93,8 +122,8 @@ class Session {
     }
 
     /**
-     * When returning to the screen on a validation error, 
-     * the value that was entered is also returned.
+     * Regenerates the session ID and refreshes the expiry time
+     * when the session has expired.
      * @return void
      */
     private function regenerateSessionId(){

@@ -65,7 +65,8 @@ class UserServiceTest extends TestCase
             ->setConstructorArgs([
                 $this->repo,
                 $this->file,
-                $this->mail
+                $this->mail,
+                $this->session
             ])
             ->onlyMethods(['checkToken'])
             ->getMock();
@@ -101,7 +102,8 @@ class UserServiceTest extends TestCase
             ->setConstructorArgs([
                 $this->repo,
                 $this->file,
-                $this->mail
+                $this->mail,
+                $this->session
             ])
             ->onlyMethods(['checkToken'])
             ->getMock();
@@ -130,12 +132,15 @@ class UserServiceTest extends TestCase
             ->method('files')
             ->willReturn(['file']);
 
+        $results = [['name' => 'a.png', 'success' => true, 'path' => 'storage/a.png']];
+
         $this->file
             ->expects($this->once())
             ->method('uploadFile')
-            ->with(['file']);
+            ->with(['file'])
+            ->willReturn($results);
 
-        $this->service->upload($fileRequest);
+        $this->assertSame($results, $this->service->upload($fileRequest));
     }
 
     public function test_mail_calls_mailer()

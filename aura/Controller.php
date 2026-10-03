@@ -3,7 +3,7 @@ namespace app\aura;
 
 use app\aura\https\Redirect;
 use app\aura\https\HttpRequest;
-use app\aura\utils\Validator;
+use app\aura\https\Validator;
 
 /**
  * Class Controller

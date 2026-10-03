@@ -152,6 +152,8 @@ class UserRepositoryTest extends TestCase {
 
         $this->assertFalse($result);
         $this->assertArrayNotHasKey('signin_user', $_SESSION);
+        // The failure message is set by the Controller, not the Repository
+        $this->assertArrayNotHasKey('msg', $_SESSION);
     }
 
     /**
@@ -176,6 +178,8 @@ class UserRepositoryTest extends TestCase {
 
         $this->assertFalse($result);
         $this->assertArrayNotHasKey('signin_user', $_SESSION);
+        // The failure message is set by the Controller, not the Repository
+        $this->assertArrayNotHasKey('msg', $_SESSION);
     }
 
     /**
