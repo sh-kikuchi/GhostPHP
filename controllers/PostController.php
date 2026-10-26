@@ -181,7 +181,7 @@ class PostController extends Controller {
             return;
         }
 
-        $id = \intval($_POST['id'] ?? 0);
+        $id = \intval($this->request->body()['id'] ?? 0);
 
         if (!$this->post_service->delete($id)) {
             Redirect::to('post');

@@ -68,8 +68,8 @@ $app->router->get('post',        [PostController::class, 'index']);
 $app->router->get('post/create', [PostController::class, 'showCreateForm']);
 $app->router->get('post/update', [PostController::class, 'showUpdateForm']);
 $app->router->post('post/create',[PostController::class, 'create']);
-$app->router->post('post/update',[PostController::class, 'update']);
-$app->router->post('post/delete',[PostController::class, 'delete']);
+$app->router->put('post/update',  [PostController::class, 'update']);
+$app->router->delete('post/delete',[PostController::class, 'delete']);
 
 /**
  * ----------------------------------------

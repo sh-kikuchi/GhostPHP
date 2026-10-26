@@ -10,6 +10,16 @@ namespace app\aura\https;
  */
 class HttpRequest {
     /**
+     * HTTP methods that a POST request may be overridden to via "_method".
+     */
+    private const OVERRIDABLE_METHODS = ['put', 'patch', 'delete'];
+
+    /**
+     * Cached form-encoded body for PUT / PATCH / DELETE requests.
+     */
+    private ?array $parsedBody = null;
+
+    /**
      * Retrieves the request path from the URI.
      *
      * @return string The request path without query parameters.
@@ -41,9 +51,22 @@ class HttpRequest {
      * @return string The request method in lowercase.
      */
     public function getMethod(): string {
-        return strtolower(
-            $_SERVER['REQUEST_METHOD']
+        $method = strtolower(
+            $_SERVER['REQUEST_METHOD'] ?? 'get'
         );
+
+        if($method !== 'post'){
+            return $method;
+        }
+
+        $override = strtolower(
+            (string)($_POST['_method'] ?? '')  
+        );
+
+        return \in_array($override, self::OVERRIDABLE_METHODS, true)
+        ? $override
+        : $method;
+
     }
 
     /**
@@ -91,7 +114,8 @@ class HttpRequest {
         // WEB (Form)
         return [
             ...$_GET,
-            ...$_POST
+            ...$_POST,
+            ...$this->parsedBody()
         ];
     }
 
@@ -116,6 +140,56 @@ class HttpRequest {
      */
     public function files(): array {
         return $_FILES ?? [];
+    }
+
+    /**
+     * Retrieves the request body only, without query string parameters.
+     *
+     * Use this for values that must not be accepted from the URL,
+     * such as CSRF tokens.
+     *
+     * @return array
+     */
+    public function body(): array {
+        if ($this->isJson()) {
+            return $this->all();
+        }
+
+        return [
+            ...$_POST,
+            ...$this->parsedBody()
+        ];
+    }
+
+    /**
+     * Parses a form-encoded body sent with PUT / PATCH / DELETE.
+     *
+     * PHP only populates $_POST for real POST requests, so the body of
+     * other methods has to be read from php://input.
+     *
+     * @return array
+     */
+    private function parsedBody(): array {
+        if ($this->parsedBody !== null) {
+            return $this->parsedBody;
+        }
+
+        $this->parsedBody = [];
+
+        $realMethod = strtolower($_SERVER['REQUEST_METHOD'] ?? 'get');
+        $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+
+        if (
+            \in_array($realMethod, self::OVERRIDABLE_METHODS, true)
+            && str_contains($contentType, 'application/x-www-form-urlencoded')
+        ) {
+            parse_str(
+                file_get_contents('php://input'),
+                $this->parsedBody
+            );
+        }
+
+        return $this->parsedBody;
     }
 
 }

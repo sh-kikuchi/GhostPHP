@@ -57,7 +57,11 @@ abstract class Controller {
             return false;
         }
 
-        return $_POST["csrf_token"] === $_SESSION['csrf_token'][$form_name];
+        $token = $this->request->body()['csrf_token'] ?? null;
+
+        return \is_string($token)
+            && hash_equals($_SESSION['csrf_token'][$form_name], $token);
+
     }
 
     /**

@@ -55,6 +55,57 @@ class Router {
     }
 
     /**
+     * Registers a PUT route.
+     */
+    public function put(
+        string $path,
+        mixed $callback
+    ): void {
+
+        $this->routes['put'][$path] = $callback;
+    }
+
+    /**
+     * Registers a PATCH route.
+     */
+    public function patch(
+        string $path,
+        mixed $callback
+    ): void {
+
+        $this->routes['patch'][$path] = $callback;
+    }
+
+    /**
+     * Registers a DELETE route.
+     */
+    public function delete(
+        string $path,
+        mixed $callback
+    ): void {
+
+        $this->routes['delete'][$path] = $callback;
+    }
+    
+    /**
+     * Returns the HTTP methods registered for the given path.
+     *
+     * @param string $path
+     * @return string[] Lowercase method names, e.g. ['get', 'post'].
+     */
+    private function allowedMethods(string $path): array {
+        $methods = [];
+
+        foreach ($this->routes as $method => $paths){
+            if(isset($paths[$path])){
+                $methods[] = $method;
+            }
+        }
+
+        return $methods;
+    }
+
+    /**
      * Creates an instance and automatically resolves constructor dependencies.
      *
      * @param string $className
@@ -106,11 +157,32 @@ class Router {
 
         $httpMethod = $this->httpRequest->getMethod();
 
+        // Handle HEAD with the GET route (the body is discarded by PHP/Apache)
+        if ($httpMethod === 'head') {
+            $httpMethod = 'get';
+        }
+
         $callback =
             $this->routes[$httpMethod][$path]
             ?? false;
 
         if ($callback === false) {
+
+            $allowed = $this->allowedMethods($path);
+
+            // The path exists but not for this method -> 405
+            if ($allowed !== []) {
+
+                http_response_code(405);
+
+                header(
+                    'Allow: ' . strtoupper(implode(', ', $allowed))
+                );
+
+                echo 'Method Not Allowed';
+
+                return;
+            }
 
             http_response_code(404);
 

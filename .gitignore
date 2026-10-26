@@ -2,3 +2,4 @@
 /.env
 /.vscode
 /docs
+/.phpunit.result.cache

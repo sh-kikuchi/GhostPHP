@@ -41,7 +41,8 @@
                         </div>
                         <div>
                             <form name="post_delete"  method="POST" action="<?php echo dirname($_SERVER['SCRIPT_NAME']); ?>/post/delete">
-                                <input hidden name="csrf_token" value="<?php echo h($csrf); ?>">  
+                                <input hidden name="_method" value="DELETE">
+                                <input hidden name="csrf_token" value="<?php echo h($csrf); ?>">
                                 <input hidden name="id" value="<?php echo h($post["id"]); ?>">
                                 <input hidden name="delete" value="">
                                 <button type="submit" class="crud-delete">DELETE</button>

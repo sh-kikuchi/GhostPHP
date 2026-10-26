@@ -29,6 +29,7 @@
             <input type="hidden" name="user_id" value="<?= h($signin_user['id'] ?? '') ?>">
 
             <?php if (!empty($post)) : ?>
+                <input type="hidden" name="_method" value="PUT">
                 <input type="hidden" name="id" value="<?= h($post['id'] ?? '') ?>">
             <?php endif; ?>
 
